@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "890084537945",
+    "project_id": "sanagati-d286e",
+    "storage_bucket": "sanagati-d286e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:890084537945:android:dedc81d979284d39bd2348",
+        "android_client_info": {
+          "package_name": "com.hris.sangati"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "890084537945-dum7n2s09k34co0d9hrp15i0eb40kc33.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA57oSBlDsCWCXAORu4T9_yUIWhLuSTqEk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "890084537945-dum7n2s09k34co0d9hrp15i0eb40kc33.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
