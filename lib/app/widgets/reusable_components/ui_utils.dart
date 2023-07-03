@@ -13,9 +13,7 @@ class UiUtils {
       content: Text(message),
       backgroundColor: AppColor.redColor(),
       behavior: SnackBarBehavior.floating,
-      // margin: EdgeInsets.all(50),
       elevation: 30,
-
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
       ),
@@ -41,6 +39,22 @@ class UiUtils {
           bottom: MediaQuery.of(context).size.height - 100,
           right: 20,
           left: 20),
+    ));
+  }
+
+  static errorMessageClose(String message, BuildContext context) {
+    return ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
+      content: Text(message),
+      backgroundColor: AppColor.grey2Color(),
+      behavior: SnackBarBehavior.floating,
+      elevation: 30,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+      // margin: EdgeInsets.only(
+      //     bottom: MediaQuery.of(context).size.height - 100,
+      //     right: 20,
+      //     left: 20),
     ));
   }
 

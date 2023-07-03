@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_interpolation_to_compose_strings, avoid_print
+// ignore_for_file: prefer_interpolation_to_compose_strings, avoid_print, unnecessary_null_comparison
 
 import 'dart:convert';
 
@@ -690,7 +690,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       defaultMargin, 0, defaultMargin, 100),
                                   child: ListView.builder(
                                       shrinkWrap: true,
-                                      physics: BouncingScrollPhysics(),
+                                      physics: const BouncingScrollPhysics(),
                                       itemCount: attendance!.length,
                                       itemBuilder: ((context, index) {
                                         var attendanceList = attendance![index];

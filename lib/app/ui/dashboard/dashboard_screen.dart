@@ -1,5 +1,7 @@
 // ignore_for_file: unused_local_variable, unnecessary_null_comparison, deprecated_member_use, unused_element, library_private_types_in_public_api
 
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +17,7 @@ import 'package:sangati/app/ui/home/home_screen.dart';
 import 'package:sangati/app/ui/notification/notification_screen.dart';
 import 'package:sangati/app/ui/profile/profile_screen.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
+import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -33,6 +36,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int? currentIndex = 0;
   int? statusVerif;
   ShiftData? shiftData;
+  DateTime pre_backpress = DateTime.now();
+  late DateTime currentBackPressTime;
   @override
   initState() {
     LocalStorageService.load("statusVerif").then((value) {
@@ -62,6 +67,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
       }
     });
+  }
+
+  Future<bool> _onBackPressed() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Keluar dari Sangati HIRS?'),
+          content: const Text('Apakah Anda ingin Keluar?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Tidak"),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text("Ya"),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                exit(0);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    // }
+
+    return true;
   }
 
   @override
@@ -194,10 +229,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     }
 
-    return Scaffold(
-      bottomNavigationBar: customBottomNavBar(),
-      body: bodyContent(),
-    );
+    return WillPopScope(
+        onWillPop: () async {
+          final timegap = DateTime.now().difference(pre_backpress);
+          final cantExit = timegap >= const Duration(seconds: 2);
+          pre_backpress = DateTime.now();
+          if (cantExit) {
+            UiUtils.errorMessageClose(
+                "Tekan sekali lagi untuk keluar", context);
+            return false;
+          } else {
+            _onBackPressed();
+            return true;
+          }
+        },
+        child: Scaffold(
+          bottomNavigationBar: customBottomNavBar(),
+          body: bodyContent(),
+        ));
   }
 
   void _showFeatureDialog() {

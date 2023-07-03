@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // _isPasswordError = _passwordController.text.isEmpty;
 
     // if (!_isPhoneNumberError && !_isPasswordError) {}
-    // isLoading = true;
+
     // authServices2
     //     .loginProfile(context, _phoneNumberController.text,
     //         _passwordController.text, _deviceId!)
@@ -123,59 +123,53 @@ class _LoginScreenState extends State<LoginScreen> {
       _isPhoneNumberError = _phoneNumberController.text.isEmpty;
       _isPasswordError = _passwordController.text.isEmpty;
 
-      if (!_isPhoneNumberError && !_isPasswordError) {}
-      isLoading = true;
-      authServices2
-          .loginProfile(context, _phoneNumberController.text,
-              _passwordController.text, _deviceId!)
-          .then((result) async {
-        if (result != null) {
-          if (result.status == "success") {
-            dataProfile = result.dataProfile;
-            LocalStorageService.save("headerToken", result.token.toString());
-            LocalStorageService.save("statusVerif", dataProfile!.statusVerifId);
+      if (!_isPhoneNumberError && !_isPasswordError) {
+        isLoading = true;
+        authServices2
+            .loginProfile(context, _phoneNumberController.text,
+                _passwordController.text, _deviceId!)
+            .then((result) async {
+          if (result != null) {
+            if (result.status == "success") {
+              dataProfile = result.dataProfile;
+              LocalStorageService.save("headerToken", result.token.toString());
+              LocalStorageService.save(
+                  "statusVerif", dataProfile!.statusVerifId);
 
-            String encodeData = jsonEncode(dataProfile);
+              String encodeData = jsonEncode(dataProfile);
 
-            LocalStorageService.save("profileData", encodeData);
+              LocalStorageService.save("profileData", encodeData);
 
-            Modular.to.popAndPushNamed('/home/');
-          } else {
-            isLoading = false;
-            setState(() {});
-            UiUtils.errorMessage(result.message!, context);
-          }
-        } else {}
-      });
-      //   _isPhoneNumberError = _phoneNumberController.text.isEmpty;
-      //   _isPasswordError = _passwordController.text.isEmpty;
+              Modular.to.popAndPushNamed('/home/');
+            } else {
+              isLoading = false;
+              setState(() {});
+              UiUtils.errorMessage(result.message!, context);
+            }
+            // HomeController()
+            //     .loginProfile(context, _phoneNumberController.text,
+            //         _passwordController.text, _deviceId!)
+            //     .then((result) async {
+            //   if (result != null) {
+            //     if (result.status == "success") {
+            //       dataProfile = result.dataProfile;
+            //       LocalStorageService.save("headerToken", result.token.toString());
+            //       LocalStorageService.save(
+            //           "statusVerif", dataProfile!.statusVerifId);
 
-      //   if (!_isPhoneNumberError && !_isPasswordError) {
-      //     isLoading = true;
-      //     HomeController()
-      //         .loginProfile(context, _phoneNumberController.text,
-      //             _passwordController.text, _deviceId!)
-      //         .then((result) async {
-      //       if (result != null) {
-      //         if (result.status == "success") {
-      //           dataProfile = result.dataProfile;
-      //           LocalStorageService.save("headerToken", result.token.toString());
-      //           LocalStorageService.save(
-      //               "statusVerif", dataProfile!.statusVerifId);
+            //       String encodeData = jsonEncode(dataProfile);
 
-      //           String encodeData = jsonEncode(dataProfile);
+            //       LocalStorageService.save("profileData", encodeData);
 
-      //           LocalStorageService.save("profileData", encodeData);
-
-      //           Modular.to.popAndPushNamed('/home/');
-      //         } else {
-      //           isLoading = false;
-      //           setState(() {});
-      //           UiUtils.errorMessage(result.message!, context);
-      //         }
-      //       } else {}
-      //     });
-      //   }
+            //       Modular.to.popAndPushNamed('/home/');
+            //     } else {
+            //       isLoading = false;
+            //       setState(() {});
+            //       UiUtils.errorMessage(result.message!, context);
+            //     }
+          } else {}
+        });
+      }
     });
   }
 
@@ -341,38 +335,37 @@ class _LoginScreenState extends State<LoginScreen> {
                             //     _phoneNumberController.text.isEmpty;
                             // _isPasswordError = _passwordController.text.isEmpty;
 
-                            // if (!_isPhoneNumberError && !_isPasswordError) {
-                            //   isLoading = true;
-                            //   authServices
-                            //       .loginProfile(
-                            //           context,
-                            //           _phoneNumberController.text,
-                            //           _passwordController.text,
-                            //           _deviceId!)
-                            //       .then((result) async {
-                            //     if (result != null) {
-                            //       if (result.status == "success") {
-                            //         dataProfile = result.dataProfile;
-                            //         LocalStorageService.save(
-                            //             "headerToken", result.token.toString());
-                            //         LocalStorageService.save("statusVerif",
-                            //             dataProfile!.statusVerifId);
+                            // if (!_isPhoneNumberError && !_isPasswordError) {}
+                            // isLoading = true;
+                            // authServices
+                            //     .loginProfile(
+                            //         context,
+                            //         _phoneNumberController.text,
+                            //         _passwordController.text,
+                            //         _deviceId!)
+                            //     .then((result) async {
+                            //   if (result != null) {
+                            //     if (result.status == "success") {
+                            //       dataProfile = result.dataProfile;
+                            //       LocalStorageService.save(
+                            //           "headerToken", result.token.toString());
+                            //       LocalStorageService.save("statusVerif",
+                            //           dataProfile!.statusVerifId);
 
-                            //         String encodeData = jsonEncode(dataProfile);
+                            //       String encodeData = jsonEncode(dataProfile);
 
-                            //         LocalStorageService.save(
-                            //             "profileData", encodeData);
+                            //       LocalStorageService.save(
+                            //           "profileData", encodeData);
 
-                            //         Modular.to.popAndPushNamed('/home/');
-                            //       } else {
-                            //         isLoading = false;
-                            //         setState(() {});
-                            //         UiUtils.errorMessage(
-                            //             result.message!, context);
-                            //       }
-                            //     } else {}
-                            //   });
-                            // }
+                            //       Modular.to.popAndPushNamed('/home/');
+                            //     } else {
+                            //       isLoading = false;
+                            //       setState(() {});
+                            //       UiUtils.errorMessage(
+                            //           result.message!, context);
+                            //     }
+                            //   } else {}
+                            // });
                           },
                         ),
                       ],

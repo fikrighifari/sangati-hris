@@ -1,3 +1,5 @@
+// ignore_for_file: sort_child_properties_last
+
 import 'dart:convert';
 
 import 'package:camera/camera.dart';
@@ -64,31 +66,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                CustomButton(
-                  isRounded: true,
-                  borderRadius: 4,
-                  width: MediaQuery.of(context).size.width / 5,
-                  height: 35,
-                  backgroundColor: AppColor.grey1Color(),
+                ElevatedButton(
+                  child: const Text('Batal'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          side: const BorderSide(color: Colors.green))),
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  text: TextWidget.button(
-                    'Batal',
-                    color: AppColor.blackColor(),
-                  ),
                 ),
-                CustomButton(
-                  isRounded: true,
-                  borderRadius: 4,
-                  width: MediaQuery.of(context).size.width / 5,
-                  height: 35,
-                  backgroundColor: AppColor.secondaryColor(),
+                ElevatedButton(
+                  child: const Text('Logout'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          side: const BorderSide(color: Colors.red))),
                   onPressed: () {
-                    // Implement logout functionality here
                     LocalStorageService.remove("headerToken");
                     LocalStorageService.remove("profileData");
                     LocalStorageService.remove("statusVerif");
@@ -96,11 +96,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     Modular.to.popAndPushNamed('/auth/');
                   },
-                  text: TextWidget.button(
-                    'Logout',
-                    color: AppColor.primaryBlueColor(),
-                  ),
                 ),
+                // CustomButton(
+                //   isRounded: true,
+                //   borderRadius: 4,
+                //   // width: MediaQuery.of(context).size.width / 5,
+                //   height: 35,
+                //   backgroundColor: AppColor.grey1Color(),
+                //   onPressed: () {
+                //     Navigator.pop(context);
+                //   },
+                //   text: TextWidget.button(
+                //     'Batal',
+                //     color: AppColor.blackColor(),
+                //   ),
+                // ),
+                // CustomButton(
+                //   isRounded: true,
+                //   borderRadius: 4,
+                //   //width: MediaQuery.of(context).size.width / 5,
+                //   height: 35,
+                //   backgroundColor: AppColor.secondaryColor(),
+                //   onPressed: () {
+                //     // Implement logout functionality here
+                //     LocalStorageService.remove("headerToken");
+                //     LocalStorageService.remove("profileData");
+                //     LocalStorageService.remove("statusVerif");
+                //     LocalStorageService.remove("statusAbsen");
+
+                //     Modular.to.popAndPushNamed('/auth/');
+                //   },
+                //   text: TextWidget.button(
+                //     'Logout',
+                //     color: AppColor.primaryBlueColor(),
+                //   ),
+                // ),
               ],
             ),
           ],
