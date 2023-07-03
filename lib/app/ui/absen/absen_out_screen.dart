@@ -43,6 +43,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
     ),
   );
   bool _isCameraPermissionGranted = false;
+  bool _isTimeZonePermissionGranted = false;
   final bool _isCameraLocationjGranted = false;
   CameraController? _cameraController;
   final bool _isRearCameraSelected = true;
@@ -65,17 +66,19 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
     super.initState();
     _statusAbsen = widget.statusAbsen;
     _shiftData = widget.shiftData;
-    fetchData();
-    getPermissionStatus();
 
+    getPermissionStatus();
     dateTimeZone();
+    getLocationGrented();
+
+    fetchData();
   }
 
   Future<void> dateTimeZone() async {
     bool timeAuto = await DatetimeSetting.timeIsAuto();
     bool timezoneAuto = await DatetimeSetting.timeZoneIsAuto();
-    print(timeAuto);
-    print(timezoneAuto);
+    // print(timeAuto);
+    // print(timezoneAuto);
 
     if (!timezoneAuto || !timeAuto) {
       showDialog(
@@ -92,6 +95,8 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
           DatetimeSetting.openSetting();
         }
       });
+    } else {
+      _isTimeZonePermissionGranted = true;
     }
   }
 
@@ -107,24 +112,27 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   }
 
   Future takePicture() async {
+    // dateTimeZone();
     if (!_isCameraPermissionGranted) {
       getPermissionStatus();
+    } else if (!_isTimeZonePermissionGranted) {
+      dateTimeZone();
     } else {
       dataResponse = await PageIndexController.determinePosition();
       if (dataResponse["error"] != true) {
         Position position = dataResponse["position"];
 
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-        // print(placemarks[0]);
-        String alamat =
-            "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
+        // List<Placemark> placemarks = await placemarkFromCoordinates(
+        //     position.latitude, position.longitude);
+        // // print(placemarks[0]);
+        // String alamat =
+        //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
         // await updatePosition(position, alamat);
 
         //cek distance between 2 koordinat / 2 posisi
         double distance = Geolocator.distanceBetween(
-            double.parse(_shiftData!.inLat!),
-            double.parse(_shiftData!.inLong!),
+            double.parse(_shiftData!.outLat!),
+            double.parse(_shiftData!.outLong!),
             position.latitude,
             position.longitude);
         int distanceVal = 0;
@@ -163,7 +171,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
         // print("cek is Mock");
         //print("isMocked----------------->>" + isMocked.toString());
 
-        if (!canMockLocation == false) {
+        if (canMockLocation == true) {
           showDialog(
             builder: (_) => const CustomDialog(
                 title: "Developer Options\nHP Anda Aktif!",
@@ -283,19 +291,6 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
       initCamera(widget.cameras![1]);
       setState(() {
         _isCameraPermissionGranted = true;
-        getLocationGrented();
-      });
-    } else {
-      showDialog(
-        builder: (_) => const CustomDialog(
-          title: "",
-          message: '',
-        ),
-        context: context,
-      ).then((value) {
-        if (value != null) {
-          print(value);
-        }
       });
     }
   }

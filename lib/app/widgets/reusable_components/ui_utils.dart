@@ -511,4 +511,172 @@ class UiUtils {
       ],
     );
   }
+
+  static customShimmerProfile(BuildContext context) {
+    return Column(
+      children: [
+        CustomContainer(
+          padding: EdgeInsets.all(defaultMargin),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 24),
+                    child: SizedBox(
+                      height: 96,
+                      width: 96,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: const CircleAvatar(
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 15,
+                            width: 200,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 15,
+                            width: 120,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 16,
+                            width: 100,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 16,
+                            width: 120,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  vertical: 12,
+                ),
+                child: Divider(
+                  color: AppColor.separatorColor(),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(
+                      right: 10,
+                    ),
+                    child: Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: CustomContainer(
+                        radius: 5,
+                        height: 35,
+                        width: 35,
+                        backgroundColor: AppColor.whiteColor(),
+                      ),
+                    ),
+                  ),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: CustomContainer(
+                      radius: 10,
+                      height: 16,
+                      width: 120,
+                      backgroundColor: AppColor.whiteColor(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: defaultMargin),
+          child: CustomContainer(
+            padding: EdgeInsets.symmetric(
+              horizontal: defaultMargin,
+              vertical: defaultMargin,
+            ),
+            margin: EdgeInsets.only(top: defaultMargin),
+            width: double.infinity,
+            // backgroundColor: AppColor.redColor(),
+            child: Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(
+                    right: 10,
+                  ),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: CustomContainer(
+                      radius: 5,
+                      height: 35,
+                      width: 35,
+                      backgroundColor: AppColor.whiteColor(),
+                    ),
+                  ),
+                ),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: CustomContainer(
+                    radius: 10,
+                    height: 16,
+                    width: 120,
+                    backgroundColor: AppColor.whiteColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

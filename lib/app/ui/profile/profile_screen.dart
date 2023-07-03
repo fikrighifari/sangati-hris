@@ -16,6 +16,7 @@ import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -71,11 +72,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton(
                   child: const Text('Batal'),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25.0),
-                          side: const BorderSide(color: Colors.green))),
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      side: const BorderSide(color: Colors.green),
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -83,11 +86,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton(
                   child: const Text('Logout'),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25.0),
-                          side: const BorderSide(color: Colors.red))),
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                  ),
                   onPressed: () {
                     LocalStorageService.remove("headerToken");
                     LocalStorageService.remove("profileData");
@@ -97,40 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Modular.to.popAndPushNamed('/auth/');
                   },
                 ),
-                // CustomButton(
-                //   isRounded: true,
-                //   borderRadius: 4,
-                //   // width: MediaQuery.of(context).size.width / 5,
-                //   height: 35,
-                //   backgroundColor: AppColor.grey1Color(),
-                //   onPressed: () {
-                //     Navigator.pop(context);
-                //   },
-                //   text: TextWidget.button(
-                //     'Batal',
-                //     color: AppColor.blackColor(),
-                //   ),
-                // ),
-                // CustomButton(
-                //   isRounded: true,
-                //   borderRadius: 4,
-                //   //width: MediaQuery.of(context).size.width / 5,
-                //   height: 35,
-                //   backgroundColor: AppColor.secondaryColor(),
-                //   onPressed: () {
-                //     // Implement logout functionality here
-                //     LocalStorageService.remove("headerToken");
-                //     LocalStorageService.remove("profileData");
-                //     LocalStorageService.remove("statusVerif");
-                //     LocalStorageService.remove("statusAbsen");
-
-                //     Modular.to.popAndPushNamed('/auth/');
-                //   },
-                //   text: TextWidget.button(
-                //     'Logout',
-                //     color: AppColor.primaryBlueColor(),
-                //   ),
-                // ),
               ],
             ),
           ],
@@ -205,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             case ConnectionState.active:
               return const Text('Press button to start.');
             case ConnectionState.waiting:
-              return const ShimmerLoading();
+              return UiUtils.customShimmerProfile(context);
             // const Center(
             //   child: CircularProgressIndicator(),
             // );
@@ -390,6 +361,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         'Verification',
                                         color: AppColor.primaryBlueColor(),
                                       ),
+                                      const Divider(
+                                        thickness: 1,
+                                      ),
                                       const SizedBox(
                                         height: 12,
                                       ),
@@ -414,14 +388,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           backgroundColor:
                                               AppColor.secondaryColor(),
                                           onPressed: () {
-                                            availableCameras().then((value) =>
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            VerifikasiSreen(
-                                                              cameras: value,
-                                                            ))));
+                                            availableCameras().then(
+                                              (value) => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      VerifikasiSreen(
+                                                    cameras: value,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
                                           },
                                           text: const TextWidget.button('OK'),
                                         ),
@@ -454,11 +431,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             'Verification Submitted',
                                             color: AppColor.primaryBlueColor(),
                                           ),
+                                          const Divider(
+                                            thickness: 1,
+                                          ),
                                           const SizedBox(
                                             height: 12,
                                           ),
-                                          const TextWidget.bodyMedium(
-                                              'Verifikasi telah dilakukan dan akan diproses oleh staff'),
+                                          // const TextWidget.bodyMedium(
+                                          //     'Verifikasi telah dilakukan dan akan diproses oleh staff \n\nSilakan lakukan proses logout & login ulang setelah verifikasi berhasil dilakukan'),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: <TextSpan>[
+                                                TextSpan(
+                                                  text:
+                                                      'Verifikasi telah dilakukan dan akan diproses oleh staff.\n\n',
+                                                  style: bodyMediumTextStyle,
+                                                ),
+                                                TextSpan(
+                                                  text:
+                                                      'Silakan lakukan proses logout & login ulang setelah verifikasi berhasil dilakukan.',
+                                                  style: bodyMediumTextStyle
+                                                      .copyWith(
+                                                    color: AppColor
+                                                        .completedColor(),
+                                                    fontWeight: boldWeight,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     )
@@ -496,179 +497,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
       ),
-    );
-  }
-}
-
-class ShimmerLoading extends StatelessWidget {
-  const ShimmerLoading({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CustomContainer(
-          padding: EdgeInsets.all(defaultMargin),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(right: 24),
-                    child: SizedBox(
-                      height: 96,
-                      width: 96,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: const CircleAvatar(
-                              backgroundColor: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: CustomContainer(
-                            radius: 10,
-                            height: 15,
-                            width: 200,
-                            backgroundColor: AppColor.whiteColor(),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: CustomContainer(
-                            radius: 10,
-                            height: 15,
-                            width: 120,
-                            backgroundColor: AppColor.whiteColor(),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: CustomContainer(
-                            radius: 10,
-                            height: 16,
-                            width: 100,
-                            backgroundColor: AppColor.whiteColor(),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: CustomContainer(
-                            radius: 10,
-                            height: 16,
-                            width: 120,
-                            backgroundColor: AppColor.whiteColor(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(
-                  vertical: 12,
-                ),
-                child: Divider(
-                  color: AppColor.separatorColor(),
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(
-                      right: 10,
-                    ),
-                    child: Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: CustomContainer(
-                        radius: 5,
-                        height: 35,
-                        width: 35,
-                        backgroundColor: AppColor.whiteColor(),
-                      ),
-                    ),
-                  ),
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: CustomContainer(
-                      radius: 10,
-                      height: 16,
-                      width: 120,
-                      backgroundColor: AppColor.whiteColor(),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: defaultMargin),
-          child: CustomContainer(
-            padding: EdgeInsets.symmetric(
-              horizontal: defaultMargin,
-              vertical: defaultMargin,
-            ),
-            margin: EdgeInsets.only(top: defaultMargin),
-            width: double.infinity,
-            // backgroundColor: AppColor.redColor(),
-            child: Row(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(
-                    right: 10,
-                  ),
-                  child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: CustomContainer(
-                      radius: 5,
-                      height: 35,
-                      width: 35,
-                      backgroundColor: AppColor.whiteColor(),
-                    ),
-                  ),
-                ),
-                Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: CustomContainer(
-                    radius: 10,
-                    height: 16,
-                    width: 120,
-                    backgroundColor: AppColor.whiteColor(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -52,6 +52,7 @@ class _AbsenInPageState extends State<AbsenInPage> {
   bool flash = false;
   bool isControllerInitialized = false;
   bool _isCameraPermissionGranted = false;
+  bool _isTimeZonePermissionGranted = false;
   final bool _isCameraLocationjGranted = false;
   final bool _isRearCameraSelected = true;
   CameraController? _cameraController;
@@ -73,10 +74,10 @@ class _AbsenInPageState extends State<AbsenInPage> {
     super.initState();
     _statusAbsen = widget.statusAbsen;
     _shiftData = widget.shiftData;
-    fetchData();
     getPermissionStatus();
     getLocationGrented();
-//dateTimeZone();
+    dateTimeZone();
+    fetchData();
   }
 
   Future<void> dateTimeZone() async {
@@ -100,6 +101,8 @@ class _AbsenInPageState extends State<AbsenInPage> {
           DatetimeSetting.openSetting();
         }
       });
+    } else {
+      _isTimeZonePermissionGranted = true;
     }
   }
 
@@ -117,6 +120,8 @@ class _AbsenInPageState extends State<AbsenInPage> {
   Future takePicture() async {
     if (!_isCameraPermissionGranted) {
       getPermissionStatus();
+    } else if (!_isTimeZonePermissionGranted) {
+      dateTimeZone();
     } else {
       dataResponse = await PageIndexController.determinePosition();
       if (dataResponse["error"] != true) {
@@ -224,19 +229,7 @@ class _AbsenInPageState extends State<AbsenInPage> {
       initCamera(widget.cameras![1]);
       setState(() {
         _isCameraPermissionGranted = true;
-        getLocationGrented();
-      });
-    } else {
-      showDialog(
-        builder: (_) => const CustomDialog(
-          title: "",
-          message: '',
-        ),
-        context: context,
-      ).then((value) {
-        if (value != null) {
-          // print(value);
-        }
+        // getLocationGrented();
       });
     }
   }
@@ -260,7 +253,7 @@ class _AbsenInPageState extends State<AbsenInPage> {
         position.latitude,
         position.longitude,
       );
-
+      dateTimeZone();
       if (distance <= int.parse(_shiftData!.radius.toString())) {
         // print("------->>Di Dalam Area" + distance.toString());
         setState(() {
