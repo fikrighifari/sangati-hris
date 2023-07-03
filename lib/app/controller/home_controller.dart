@@ -388,7 +388,7 @@ class HomeController {
         "page": currentPage,
         "per_page": 10,
         "sort": "desc",
-        "status": "Normal",
+        "status": "",
         "month": dateMM,
         "year": dateYYYY,
       };

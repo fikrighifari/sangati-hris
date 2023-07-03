@@ -1,6 +1,7 @@
 // ignore_for_file: sized_box_for_whitespace, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
@@ -10,7 +11,11 @@ class CustomTabbar extends StatelessWidget {
   final List<String>? titles;
   final Function(int)? onTap;
 
-  const CustomTabbar({this.selectedIndex, this.titles, this.onTap});
+  const CustomTabbar({
+    this.selectedIndex,
+    this.titles,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +23,15 @@ class CustomTabbar extends StatelessWidget {
       height: 100,
       child: Stack(
         children: [
-          Container(
-              // padding: EdgeInsets.only(top: 48),
-              // height: 1,
-              // color: AppColor.whiteColor(),
-              ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: titles!
                 .map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.only(left: 30),
+                  (e) => Container(
+                    margin: const EdgeInsets.only(right: 12),
                     child: CustomContainer(
+                      width: 130,
                       radius: 4,
                       containerType: RoundedContainerType.outlined,
                       padding: const EdgeInsets.symmetric(
@@ -37,11 +40,12 @@ class CustomTabbar extends StatelessWidget {
                       ),
                       backgroundColor: (titles!.indexOf(e) == selectedIndex)
                           ? AppColor.secondaryColor().withOpacity(0.1)
-                          : Colors.transparent,
+                          : AppColor.whiteColor(),
                       borderColor: (titles!.indexOf(e) == selectedIndex)
                           ? AppColor.secondaryColor()
-                          : Colors.transparent,
-                      child: Column(
+                          : AppColor.grey1Color(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
                             onTap: () {
@@ -56,6 +60,11 @@ class CustomTabbar extends StatelessWidget {
                                       fontWeight: FontWeight.w600, fontSize: 12)
                                   : labelLargeTextStyle,
                             ),
+                          ),
+
+                          SvgPicture.asset(
+                            'assets/icons/ic_dropdown_filter.svg',
+                            width: 16,
                           ),
                           // SizedBox(
                           //   height: 10,

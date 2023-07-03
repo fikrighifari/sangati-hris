@@ -14,6 +14,7 @@ import 'package:sangati/app/widgets/cards/history_item.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_scaffold.dart';
+import 'package:sangati/app/widgets/reusable_components/custom_tabbar_filter.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -26,18 +27,20 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   String selectedOption = '';
-  late String formattedCurrentDate;
+  final RefreshController _refreshController = RefreshController();
 
+  late String formattedCurrentDate;
   late DateTime selectedDate;
   late TextEditingController dateController;
   late Future<AttendanceHistoryModel?> futureAttendanceHistory;
   late List<AttendanceHistory>? attendanceHistory = [];
-  List data = [];
   late String? dateMM;
   late String? dateYYYY;
+  List data = [];
   int currentPage = 1;
-  final RefreshController _refreshController = RefreshController();
+  int selectedIndex = 0;
   bool isLoading = false;
+
   // @override
   // void initState() {
   //   super.initState();
@@ -60,6 +63,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     'Cuti Dispensasi',
     'Cuti',
     'Cuti Bersama',
+  ];
+
+  List<String> filterCategory = [
+    'All',
+    'Normal',
+    'Mangkir',
+    'Cuti',
+    'Izin',
+    'Official Trip',
+    'Libur Nasional',
   ];
 
   Future<void> _showMonthYearPicker(BuildContext context) async {
@@ -98,10 +111,95 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
+  Future<void> _showModalFiler(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(10.0),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(150.0, 20.0, 150.0, 20.0),
+              child: Container(
+                height: 5.0,
+                width: 80.0,
+                decoration: const BoxDecoration(
+                  color: Color(0xffD7D7D7),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8.0),
+                  ),
+                ),
+              ),
+            ),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: TextWidget.titleMedium(
+                      'Filter',
+                    ),
+                  ),
+                ),
+                // IconButton(
+                //   icon: Icon(Icons.close),
+                //   onPressed: () => Navigator.pop(context),
+                // ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const TextWidget.titleMedium('Cuti'),
+                  Column(
+                    children: options.map((option) {
+                      return RadioListTile(
+                        title: TextWidget.bodyMedium(option),
+                        value: option,
+                        groupValue: selectedOption,
+                        onChanged: (value) {
+                          setState(() {
+                            selectedOption = value as String;
+                          });
+                        },
+                        controlAffinity: ListTileControlAffinity.trailing,
+                      );
+                    }).toList(),
+                  ),
+                  CustomButton(
+                    width: MediaQuery.of(context).size.width,
+                    backgroundColor: AppColor.secondaryColor(),
+                    isRounded: true,
+                    borderRadius: 4,
+                    text: const TextWidget.button('Apply Filter'),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   fetchData() {
     currentPage = 1;
-    futureAttendanceHistory =
-        HomeController().getAttendanceHistory(currentPage, dateMM, dateYYYY);
+    futureAttendanceHistory = HomeController().getAttendanceHistory(
+      currentPage,
+      dateMM,
+      dateYYYY,
+    );
     futureAttendanceHistory.then((value) {
       if (value != null) {
         if (value.status == "success") {
@@ -346,6 +444,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
             // ),
 
             // //* Filter Category
+            // SizedBox(
+            //   height: 40,
+            //   width: double.infinity,
+            //   child: ListView(
+            //     scrollDirection: Axis.horizontal,
+            //     children: [
+            //       CustomTabbar(
+            //         titles: filterCategory,
+            //         //  const [
+            //         //   'All',
+            //         //   'Normal',
+            //         //   'Mangkir',
+            //         //   'Cuti',
+            //         //   'Izin',
+            //         //   'Official Trip',
+            //         //   'Libur Nasional',
+            //         // ],
+            //         selectedIndex: selectedIndex,
+            //         onTap: (index) {
+            //           setState(() {
+            //             selectedIndex = index;
+            //             _showModalFiler(context);
+            //           });
+            //         },
+            //       ),
+            //     ],
+            //   ),
+            // ),
             // Container(
             //   padding: EdgeInsets.only(top: defaultMargin),
             //   child: SingleChildScrollView(
@@ -372,98 +498,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             //               'assets/icons/ic_dropdown_filter.svg',
             //               width: 16,
             //             ),
-            //             onPressed: () {
-            //               showModalBottomSheet(
-            //                 context: context,
-            //                 shape: const RoundedRectangleBorder(
-            //                   borderRadius: BorderRadius.vertical(
-            //                     top: Radius.circular(10.0),
-            //                   ),
-            //                 ),
-            //                 builder: (BuildContext context) {
-            //                   return Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.start,
-            //                     mainAxisSize: MainAxisSize.min,
-            //                     children: [
-            //                       Padding(
-            //                         padding: const EdgeInsets.fromLTRB(
-            //                             150.0, 20.0, 150.0, 20.0),
-            //                         child: Container(
-            //                           height: 5.0,
-            //                           width: 80.0,
-            //                           decoration: const BoxDecoration(
-            //                             color: Color(0xffD7D7D7),
-            //                             borderRadius: BorderRadius.all(
-            //                               Radius.circular(8.0),
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                       const Row(
-            //                         mainAxisAlignment:
-            //                             MainAxisAlignment.spaceBetween,
-            //                         children: [
-            //                           Expanded(
-            //                             child: Align(
-            //                               alignment: Alignment.center,
-            //                               child: TextWidget.titleMedium(
-            //                                 'Filter',
-            //                               ),
-            //                             ),
-            //                           ),
-            //                           // IconButton(
-            //                           //   icon: Icon(Icons.close),
-            //                           //   onPressed: () => Navigator.pop(context),
-            //                           // ),
-            //                         ],
-            //                       ),
-            //                       Padding(
-            //                         padding: const EdgeInsets.all(24),
-            //                         child: Column(
-            //                           mainAxisAlignment:
-            //                               MainAxisAlignment.start,
-            //                           crossAxisAlignment:
-            //                               CrossAxisAlignment.start,
-            //                           children: [
-            //                             const TextWidget.titleMedium('Cuti'),
-            //                             Column(
-            //                               children: options.map((option) {
-            //                                 return RadioListTile(
-            //                                   title:
-            //                                       TextWidget.bodyMedium(option),
-            //                                   value: option,
-            //                                   groupValue: selectedOption,
-            //                                   onChanged: (value) {
-            //                                     setState(() {
-            //                                       selectedOption =
-            //                                           value as String;
-            //                                     });
-            //                                   },
-            //                                   controlAffinity:
-            //                                       ListTileControlAffinity
-            //                                           .trailing,
-            //                                 );
-            //                               }).toList(),
-            //                             ),
-            //                             CustomButton(
-            //                               width:
-            //                                   MediaQuery.of(context).size.width,
-            //                               backgroundColor:
-            //                                   AppColor.secondaryColor(),
-            //                               isRounded: true,
-            //                               borderRadius: 4,
-            //                               text: const TextWidget.button(
-            //                                   'Apply Filter'),
-            //                               onPressed: () {},
-            //                             ),
-            //                           ],
-            //                         ),
-            //                       ),
-            //                     ],
-            //                   );
-            //                 },
-            //               );
-            //             },
+            //             onPressed: () {},
             //           ),
             //         ),
             //         Container(
@@ -512,34 +547,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
             //     ),
             //   ),
             // ),
+
             !isLoading
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(),
+                      padding: const EdgeInsets.all(16),
+                      child: CircularProgressIndicator(
+                        color: AppColor.secondaryColor(),
+                      ),
                     ),
                   )
-                // ignore: sized_box_for_whitespace
-                : Container(
+                : SizedBox(
                     height: MediaQuery.of(context).size.height,
                     // padding: EdgeInsets.fromLTRB(
                     //     defaultMargin, 0, defaultMargin, 100),
                     child: data.isEmpty
-                        ? const Column(
+                        ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Center(
-                              //   child: SvgPicture.asset(
-                              //     "assets/icons/ic_nodata.svg",
-                              //   ),
-                              // ),
-                              SizedBox(
-                                height: 15,
+                              Center(
+                                child: SvgPicture.asset(
+                                  "assets/illustrations/asset_no_data.svg",
+                                  width: 100,
+                                ),
                               ),
-                              TextWidget.title(
-                                "Data Kosong",
+                              SizedBox(
+                                height: defaultMargin,
+                              ),
+                              const TextWidget.title(
+                                'You don’t have any attendance History',
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ],
@@ -554,7 +591,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             onLoading: onLoading,
                             child: ListView.builder(
                                 shrinkWrap: true,
-                                // physics: const NeverScrollableScrollPhysics(),
+                                physics: const BouncingScrollPhysics(),
                                 itemCount: data.length,
                                 itemBuilder: ((context, index) {
                                   var attendanceList = data[index];

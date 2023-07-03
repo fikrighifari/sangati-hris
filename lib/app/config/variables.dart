@@ -1,10 +1,10 @@
 const keyGoogleMap = "AIzaSyBIhOYoxLJQqkUA5fQSr60JkPit891uc14";
 
-//--------Local API
+//*--------Local API
 // const baseAPIUrl = "http://192.168.10.88/hris-office/api/v1/";
 // const baseAPIUrlImage = "http://192.168.10.88/hris-office/api/v1/";
 
-//--------Live API
+//*--------Live API
 const baseAPIUrl = "https://develop.apijlantahdev.xyz:8443/api/v1/";
 const baseAPIUrlImage = "https://develop.apijlantahdev.xyz:8443/api/v1/";
 
