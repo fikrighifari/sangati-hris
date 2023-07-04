@@ -1,10 +1,5 @@
 // ignore_for_file: sized_box_for_whitespace, use_key_in_widget_constructors
-
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
+part of 'reusable_components.dart';
 
 class CustomTabbar extends StatelessWidget {
   final int? selectedIndex;

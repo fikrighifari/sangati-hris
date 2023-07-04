@@ -1,11 +1,5 @@
 // ignore_for_file: non_constant_identifier_names, unnecessary_new, avoid_unnecessary_containers
-
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:shimmer/shimmer.dart';
+part of 'reusable_components.dart';
 
 class UiUtils {
   static errorMessage(String message, BuildContext context) {

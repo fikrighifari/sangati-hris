@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_scaffold.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class AbsenSuccessScreen extends StatelessWidget {
   const AbsenSuccessScreen({super.key});

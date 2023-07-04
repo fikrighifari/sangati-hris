@@ -12,12 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sangati/app/controller/home_controller.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/absen/facedetection/face_detector_painter.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog_loading.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog_status.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 List<CameraDescription> cameras = [];
 

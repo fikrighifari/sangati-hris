@@ -16,10 +16,7 @@ import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/absen/clock_out_screen.dart';
 import 'package:sangati/app/ui/absen/facedetection/face_detector_painter.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class AbsenOutPage extends StatefulWidget {
   const AbsenOutPage(

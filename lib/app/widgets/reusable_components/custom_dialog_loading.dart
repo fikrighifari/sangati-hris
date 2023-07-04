@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+part of 'reusable_components.dart';
 
 class CustomDialogLoading extends StatefulWidget {
   const CustomDialogLoading({

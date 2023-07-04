@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/constant/enums/text_type.dart';
+part of 'reusable_components.dart';
 
 class TextWidget extends StatelessWidget {
   final double? fontSize;

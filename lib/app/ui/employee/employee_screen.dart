@@ -5,10 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/employee/employee_detail_screen.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_scaffold.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text_form_field.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class EmployeeScreen extends StatefulWidget {
   const EmployeeScreen({super.key});

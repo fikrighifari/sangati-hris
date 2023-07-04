@@ -4,8 +4,7 @@ import 'package:sangati/app/models/history_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/history/detail_history_screen.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class HistoryItem extends StatelessWidget {
   final HistoryModel historyItem;

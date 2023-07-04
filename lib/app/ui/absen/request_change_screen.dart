@@ -5,10 +5,7 @@ import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/absen/processing_screen.dart';
 import 'package:sangati/app/widgets/cards/history_item.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_appbar.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class RequestChangeScreen extends StatefulWidget {
   const RequestChangeScreen({super.key});

@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/constant/enums/button_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+part of 'reusable_components.dart';
 
 class CustomButton extends StatelessWidget {
   final TextWidget? text;

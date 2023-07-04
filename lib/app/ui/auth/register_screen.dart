@@ -11,11 +11,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sangati/app/controller/home_controller.dart';
 import 'package:sangati/app/models/profile_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_scaffold.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text_form_field.dart';
-import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

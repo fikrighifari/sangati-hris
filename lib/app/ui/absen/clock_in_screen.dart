@@ -13,12 +13,7 @@ import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog_loading.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog_status.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
-import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class ClockInScreen extends StatefulWidget {
   const ClockInScreen({

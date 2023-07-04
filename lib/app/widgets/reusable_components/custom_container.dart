@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
+part of 'reusable_components.dart';
 
 class CustomContainer extends StatelessWidget {
   final RoundedContainerType containerType;

@@ -11,11 +11,7 @@ import 'package:sangati/app/models/attendance_history_model.dart';
 import 'package:sangati/app/models/history_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/widgets/cards/history_item.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_scaffold.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_tabbar_filter.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class HistoryScreen extends StatefulWidget {
   HistoryScreen({Key? key, required this.isBack}) : super(key: key);

@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:sangati/app/themes/color_themes.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+part of 'reusable_components.dart';
 
 class CustomScaffold extends StatelessWidget {
   final Widget? child;

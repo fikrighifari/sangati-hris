@@ -7,11 +7,7 @@ import 'package:sangati/app/models/history_detail_model.dart';
 import 'package:sangati/app/models/history_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_appbar.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_text_form_field.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class DetailHistoryScreen extends StatefulWidget {
   const DetailHistoryScreen({

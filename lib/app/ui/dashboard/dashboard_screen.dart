@@ -16,8 +16,7 @@ import 'package:sangati/app/ui/employee/employee_screen.dart';
 import 'package:sangati/app/ui/home/home_screen.dart';
 import 'package:sangati/app/ui/notification/notification_screen.dart';
 import 'package:sangati/app/ui/profile/profile_screen.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
-import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
+import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
