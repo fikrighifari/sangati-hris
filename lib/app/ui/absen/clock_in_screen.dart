@@ -7,19 +7,18 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:safe_device/safe_device.dart';
+import 'package:intl/intl.dart';
 import 'package:sangati/app/controller/home_controller.dart';
-import 'package:sangati/app/controller/page_index.dart';
 import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_button.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
-import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_dialog_loading.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_dialog_status.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
+import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
 
 class ClockInScreen extends StatefulWidget {
   const ClockInScreen({
@@ -102,64 +101,78 @@ class _ClockInScreenState extends State<ClockInScreen> {
   }
 
   Future<void> presensi() async {
-    dataResponse = await PageIndexController.determinePosition();
-
-    if (dataResponse["error"] != true) {
-      Position positionLtLong = dataResponse["position"];
-
-      double distance = Geolocator.distanceBetween(
-          double.parse(_shiftData!.inLat!),
-          double.parse(_shiftData!.inLong!),
-          positionLtLong.latitude,
-          positionLtLong.longitude);
-      int distanceVal = 0;
-
-      if (distance <= int.parse(widget.shiftData!.radius.toString())) {
-        //  print("------->>Di Dalam Area");
-        distanceVal = 1;
-      }
-      // print("sasasasas: " + distanceVal.toString());
-      bool canMockLocation = await SafeDevice.canMockLocation;
-      if (!canMockLocation == false) {
-        showDialog(
-          builder: (_) => const CustomDialog(
-              title: "Developer Options\nHP Anda Aktif!",
-              message:
-                  "Silahkan matikan Developer Options/Opsi Pengembang pada Pengaturan device Anda, lalu keluar dari aplikasi ini dan coba masuk kembali."),
-          context: context,
-        ).then((value) {
-          if (value != null) {
-            //  print(value);
-          }
-        });
-      } else if (distanceVal == 0) {
-        showDialog(
-          barrierDismissible: false,
-          builder: (_) => const CustomDialog(
-            title: "Anda Berada Di luar Area ",
-            message:
-                'Anda Berada Di luar Area jangkauan Absensi silahkan kembali ke titik Absensi',
-          ),
-          context: context,
-        ).then((value) {
-          if (value != null) {
-            // print(value);
-            // DatetimeSetting.openSetting();
-          }
-        });
+    HomeController().getTimeZone().then((result) {
+      if (result != null) {
+        responseTime = result.data['time'];
+        // print(responseTime.toString());
+        presensiToServer(responseTime, widget.position, _imageFile);
       } else {
-        HomeController().getTimeZone().then((result) {
-          if (result != null) {
-            responseTime = result.data['time'];
-
-            presensiToServer(responseTime, positionLtLong, _imageFile);
-          }
-        });
-        // print("------->>Di Dalam send");
+        DateTime now = DateTime.now();
+        String todayDocID = DateFormat.Hm().format(now);
+        //  print(todayDocID.toString());
+        UiUtils.errorMessage(
+            "Terjadi Kesalahan Perikasa Kembali Jaringan Anda!", context);
+        Navigator.pop(context);
       }
-    } else {
-      //  Navigator.pop(context);
-    }
+    });
+
+    // dataResponse = await PageIndexController.determinePosition();
+
+    // if (dataResponse["error"] != true) {
+    //   Position positionLtLong = dataResponse["position"];
+
+    //   double distance = Geolocator.distanceBetween(
+    //       double.parse(_shiftData!.inLat!),
+    //       double.parse(_shiftData!.inLong!),
+    //       positionLtLong.latitude,
+    //       positionLtLong.longitude);
+    //   int distanceVal = 0;
+
+    //   if (distance <= int.parse(widget.shiftData!.radius.toString())) {
+    //     //  print("------->>Di Dalam Area");
+    //     distanceVal = 1;
+    //   }
+    //   // print("sasasasas: " + distanceVal.toString());
+    //   bool canMockLocation = await SafeDevice.canMockLocation;
+    //   if (!canMockLocation == false) {
+    //     showDialog(
+    //       builder: (_) => const CustomDialog(
+    //           title: "Developer Options\nHP Anda Aktif!",
+    //           message:
+    //               "Silahkan matikan Developer Options/Opsi Pengembang pada Pengaturan device Anda, lalu keluar dari aplikasi ini dan coba masuk kembali."),
+    //       context: context,
+    //     ).then((value) {
+    //       if (value != null) {
+    //         //  print(value);
+    //       }
+    //     });
+    //   } else if (distanceVal == 0) {
+    //     showDialog(
+    //       barrierDismissible: false,
+    //       builder: (_) => const CustomDialog(
+    //         title: "Anda Berada Di luar Area ",
+    //         message:
+    //             'Anda Berada Di luar Area jangkauan Absensi silahkan kembali ke titik Absensi',
+    //       ),
+    //       context: context,
+    //     ).then((value) {
+    //       if (value != null) {
+    //         // print(value);
+    //         // DatetimeSetting.openSetting();
+    //       }
+    //     });
+    //   } else {
+    //     HomeController().getTimeZone().then((result) {
+    //       if (result != null) {
+    //         responseTime = result.data['time'];
+
+    //         presensiToServer(responseTime, positionLtLong, _imageFile);
+    //       }
+    //     });
+    //   }
+    // } else {
+    //   //  Navigator.pop(context);
+    // }
   }
 
   Future<void> presensiToServer(String? responseTime, Position positionLatLong,
@@ -258,8 +271,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                   radius: 4,
                                   child: Image.file(
                                     _imageFile!,
-                                    width: 192,
-                                    height: 235,
+                                    width: 130,
+                                    // height: 235,
                                     fit: BoxFit.cover,
                                   ),
                                   // Image.asset(
@@ -268,6 +281,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                   // ),
                                 ),
                               ),
+                              Spacer(),
                               Container(
                                 // color: AppColor.redColor(),
                                 width: MediaQuery.of(context).size.width / 2.5,
@@ -398,6 +412,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
                     ),
                   ),
                   onPressed: () async {
+                    showDialog(
+                      barrierDismissible: false,
+                      builder: (_) => const CustomDialogLoading(),
+                      context: context,
+                    );
                     await presensi();
                   },
                 ),

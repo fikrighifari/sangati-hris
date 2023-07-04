@@ -6,12 +6,10 @@ import 'package:camera/camera.dart';
 import 'package:datetime_setting/datetime_setting.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:safe_device/safe_device.dart';
 import 'package:sangati/app/controller/home_controller.dart';
 import 'package:sangati/app/controller/page_index.dart';
 import 'package:sangati/app/models/shift_model.dart';
@@ -45,6 +43,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   bool _isCameraPermissionGranted = false;
   bool _isTimeZonePermissionGranted = false;
   final bool _isCameraLocationjGranted = false;
+  bool _isLocationjGranted = false;
   CameraController? _cameraController;
   final bool _isRearCameraSelected = true;
   TextEditingController controller = TextEditingController();
@@ -54,7 +53,9 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   ShiftData? _shiftData;
   late Map<String, dynamic> dataResponse;
   late int? _statusAbsen;
-  int? distanceVal = 0;
+  late bool? distanceVal = false;
+  late bool? canMockLocation = false;
+
   @override
   void dispose() {
     _cameraController!.dispose();
@@ -64,14 +65,89 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   @override
   void initState() {
     super.initState();
+
     _statusAbsen = widget.statusAbsen;
     _shiftData = widget.shiftData;
-
     getPermissionStatus();
-    dateTimeZone();
-    getLocationGrented();
-
     fetchData();
+  }
+
+  getPermissionStatus() async {
+    await Permission.camera.request();
+    var status = await Permission.camera.status;
+
+    if (status.isGranted) {
+      // log('Camera Permission: GRANTED');
+      initCamera(widget.cameras![1]);
+      setState(() {
+        _isCameraPermissionGranted = true;
+        getLocationGrented();
+      });
+    } else {
+      showDialog(
+        barrierDismissible: false,
+        builder: (_) => const CustomDialog(
+          title: "Allow Camera",
+          message: 'Silahkan Allow Camera Untuk Pengambilan Photo',
+        ),
+        context: context,
+      ).then((value) {
+        if (value != null) {
+          getPermissionStatus();
+        }
+      });
+    }
+  }
+
+  getLocationGrented() async {
+    dataResponse = await PageIndexController.determinePosition();
+    // print("sasasasas--------- " + dataResponse.toString());
+
+    if (dataResponse["error"] != true) {
+      Position position = dataResponse["position"];
+
+      // List<Placemark> placemarks =
+      //     await placemarkFromCoordinates(position.latitude, position.longitude);
+      // // print(placemarks[0]);
+      // String alamat =
+      //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
+
+      double distance = Geolocator.distanceBetween(
+        double.parse(_shiftData!.outLat!),
+        double.parse(_shiftData!.outLong!),
+        // -6.176219003174864,
+        // 106.82695509783385,
+        position.latitude,
+        position.longitude,
+      );
+
+      if (distance <= int.parse(_shiftData!.radius.toString())) {
+        // print("------->>Di Dalam Area" + distance.toString());
+        setState(() {
+          distanceVal = false;
+        });
+      } else {
+        // print("------->>Di Luar Area" + distance.toString());
+        setState(() {
+          distanceVal = true;
+        });
+      }
+      _isLocationjGranted = true;
+      dateTimeZone();
+    } else {
+      showDialog(
+        barrierDismissible: false,
+        builder: (_) => CustomDialog(
+          title: "Allow Location",
+          message: dataResponse["message"].toString(),
+        ),
+        context: context,
+      ).then((value) {
+        if (value != null) {
+          getLocationGrented();
+        }
+      });
+    }
   }
 
   Future<void> dateTimeZone() async {
@@ -91,7 +167,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
         context: context,
       ).then((value) {
         if (value != null) {
-          print(value);
+          // print(value);
           DatetimeSetting.openSetting();
         }
       });
@@ -112,66 +188,17 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   }
 
   Future takePicture() async {
-    // dateTimeZone();
     if (!_isCameraPermissionGranted) {
       getPermissionStatus();
     } else if (!_isTimeZonePermissionGranted) {
       dateTimeZone();
+    } else if (!_isLocationjGranted) {
+      getLocationGrented();
     } else {
       dataResponse = await PageIndexController.determinePosition();
       if (dataResponse["error"] != true) {
         Position position = dataResponse["position"];
-
-        // List<Placemark> placemarks = await placemarkFromCoordinates(
-        //     position.latitude, position.longitude);
-        // // print(placemarks[0]);
-        // String alamat =
-        //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
-        // await updatePosition(position, alamat);
-
-        //cek distance between 2 koordinat / 2 posisi
-        double distance = Geolocator.distanceBetween(
-            double.parse(_shiftData!.outLat!),
-            double.parse(_shiftData!.outLong!),
-            position.latitude,
-            position.longitude);
-        int distanceVal = 0;
-
-        if (distance <= int.parse(_shiftData!.radius.toString())) {
-          distanceVal = 1;
-        }
-
-        // print(
-        //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
-        //         alamat);
-        // print(
-        //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
-        //         position.latitude.toString());
-        // print(
-        //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
-        //         position.longitude.toString());
-        // bool isDevelopmentModeEnable = await SafeDevice.isDevelopmentModeEnable;
-        // // print(isDevelopmentModeEnable);
-        // // print(
-        // //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
-        // //         isDevelopmentModeEnable.toString());
-
-        // bool isRealDevice = await SafeDevice.isRealDevice;
-        bool canMockLocation = await SafeDevice.canMockLocation;
-        //bool isDevelopmentModeEnable = await SafeDevice.isDevelopmentModeEnable;
-        // final bool isMocked = await Geolocator.isLocationServiceEnabled();
-
-        // bool a = !canMockLocation;
-        // print("canMockLocation hhhhh----------------->>" + a.toString());
-        // print("isDevelopmentModeEnable----------------->>" +
-        //     isDevelopmentModeEnable.toString());
-        // print(
-        //     "canMockLocation----------------->>" + canMockLocation.toString());
-
-        // print("cek is Mock");
-        //print("isMocked----------------->>" + isMocked.toString());
-
-        if (canMockLocation == true) {
+        if (position.isMocked == true) {
           showDialog(
             builder: (_) => const CustomDialog(
                 title: "Developer Options\nHP Anda Aktif!",
@@ -179,11 +206,9 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
                     "Silahkan matikan Developer Options/Opsi Pengembang pada Pengaturan device Anda, lalu keluar dari aplikasi ini dan coba masuk kembali."),
             context: context,
           ).then((value) {
-            if (value != null) {
-              print(value);
-            }
+            Navigator.pop(context);
           });
-        } else if (distanceVal == 0) {
+        } else if (distanceVal!) {
           showDialog(
             barrierDismissible: false,
             builder: (_) => const CustomDialog(
@@ -193,10 +218,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
             ),
             context: context,
           ).then((value) {
-            if (value != null) {
-              print(value);
-              // DatetimeSetting.openSetting();
-            }
+            Navigator.pop(context);
           });
         } else {
           try {
@@ -216,110 +238,17 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   }
 
   Future initCamera(CameraDescription cameraDescription) async {
-    _cameraController =
-        CameraController(cameraDescription, ResolutionPreset.high);
+    _cameraController = CameraController(
+        cameraDescription, ResolutionPreset.high,
+        enableAudio: false);
 
     try {
       await _cameraController!.initialize().then((_) {
         if (!mounted) return;
         setState(() {});
-        // _cameraController!.startImageStream((CameraImage image) async {
-        //   if (_cameraController != null) {
-        // if (_isDetecting) return;
-        // _isDetecting = true;
-        // dynamic finalResult = Multimap<String, Face>();
-
-        // detect(image, getDetectionMethod()).then((dynamic result) async {
-        //   if (result.length == 0 || result == null) {
-        //     _faceFound = false;
-        //     _predRes = 'Tidak dikenali';
-        //   } else {
-        //     _faceFound = true;
-        //   }
-
-        //   String res;
-        //   Face _face;
-
-        //   imglib.Image convertedImage =
-        //       convertCameraImage(image, CameraLensDirection.front);
-
-        //   for (_face in result) {
-        //     double x, y, w, h;
-        //     x = (_face.boundingBox.left - 10);
-        //     y = (_face.boundingBox.top - 10);
-        //     w = (_face.boundingBox.width + 10);
-        //     h = (_face.boundingBox.height + 10);
-        //     imglib.Image croppedImage = imglib.copyCrop(
-        //         convertedImage, x.round(), y.round(), w.round(), h.round());
-        //     croppedImage = imglib.copyResizeCropSquare(croppedImage, 112);
-        //     res = recog(croppedImage);
-        //     finalResult.add(res, _face);
-        //   }
-
-        //   _scanResults = finalResult;
-        //   _isDetecting = false;
-        //   setState(() {});
-        // }).catchError(
-        //   (_) async {
-        //     print({'error': _.toString()});
-        //     _isDetecting = false;
-        //     if (_camera != null) {
-        //       await _camera!.stopImageStream();
-        //       await Future.delayed(const Duration(milliseconds: 400));
-        //       await _camera!.dispose();
-        //       await Future.delayed(const Duration(milliseconds: 400));
-        //       _camera = null;
-        //     }
-        //     Navigator.pop(context);
-        //   },
-        // );
-        // }
-        // });
       });
     } on CameraException catch (e) {
       debugPrint("camera error $e");
-    }
-  }
-
-  getPermissionStatus() async {
-    await Permission.camera.request();
-    var status = await Permission.camera.status;
-    // var statusLok = await Permission.location.status;
-
-    if (status.isGranted) {
-      // log('Camera Permission: GRANTED');
-      initCamera(widget.cameras![1]);
-      setState(() {
-        _isCameraPermissionGranted = true;
-      });
-    }
-  }
-
-  getLocationGrented() async {
-    dataResponse = await PageIndexController.determinePosition();
-    if (dataResponse["error"] != true) {
-      Position position = dataResponse["position"];
-
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
-      // print(placemarks[0]);
-      String alamat =
-          "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
-      // await updatePosition(position, alamat);
-
-      //cek distance between 2 koordinat / 2 posisi
-      double distance = Geolocator.distanceBetween(
-          double.parse(_shiftData!.inLat!),
-          double.parse(_shiftData!.inLong!),
-          // -6.176219003174864,
-          // 106.82695509783385,
-          position.latitude,
-          position.longitude);
-
-      if (distance <= int.parse(_shiftData!.radius.toString())) {
-        //  print("------->>Di Dalam Area");
-        distanceVal = 1;
-      }
     }
   }
 
@@ -402,8 +331,9 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                  distanceVal! == 0
-                      ? Align(
+                  Visibility(
+                      visible: distanceVal!,
+                      child: Align(
                           alignment: Alignment.topCenter,
                           child: Container(
                             padding: const EdgeInsets.only(top: 10),
@@ -421,9 +351,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
                                 color: AppColor.primaryColor(),
                               ),
                             ),
-                          ))
-                      : Container(),
-
+                          ))),
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.only(bottom: 20),
@@ -431,36 +359,6 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
                           width: MediaQuery.of(context).size.width * 2.0),
                     ),
                   ),
-                  // Expanded(
-                  //   child: Padding(
-                  //     padding: const EdgeInsets.only(bottom: 0),
-                  //     child: Column(
-                  //       children: [
-                  //         // CustomContainer(
-                  //         //   margin: EdgeInsets.only(
-                  //         //     top: defaultMargin,
-                  //         //     bottom: MediaQuery.of(context).size.height * 0.1,
-                  //         //   ),
-                  //         //   // height: 100,
-                  //         //   padding: EdgeInsets.symmetric(
-                  //         //     horizontal: defaultMargin,
-                  //         //     vertical: defaultMargin,
-                  //         //   ),
-                  //         //   radius: 8,
-                  //         //   backgroundColor:
-                  //         //       AppColor.secondaryColor().withOpacity(0.2),
-                  //         //   child: TextWidget(
-                  //         //     'Anda sedang berada di luar jangkauan',
-                  //         //     color: AppColor.redColor(),
-                  //         //   ),
-                  //         // ),
-                  //         Lottie.asset("assets/lottie/face_scanning.json",
-                  //             width: MediaQuery.of(context).size.width * 2.0),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-
                   Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(

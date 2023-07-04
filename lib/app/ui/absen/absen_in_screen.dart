@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, unused_field, use_build_context_synchronously, prefer_interpolation_to_compose_strings, avoid_unnecessary_containers
+// ignore_for_file: unused_local_variable, unused_field, use_build_context_synchronously, prefer_interpolation_to_compose_strings, avoid_unnecessary_containers, unnecessary_const, unused_catch_clause
 
 import 'dart:io';
 
@@ -10,7 +10,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:safe_device/safe_device.dart';
 import 'package:sangati/app/controller/home_controller.dart';
 import 'package:sangati/app/controller/page_index.dart';
 import 'package:sangati/app/models/shift_model.dart';
@@ -51,9 +50,10 @@ class _AbsenInPageState extends State<AbsenInPage> {
   late bool? distanceVal = false;
   bool flash = false;
   bool isControllerInitialized = false;
+
   bool _isCameraPermissionGranted = false;
   bool _isTimeZonePermissionGranted = false;
-  final bool _isCameraLocationjGranted = false;
+  bool _isLocationjGranted = false;
   final bool _isRearCameraSelected = true;
   CameraController? _cameraController;
 
@@ -62,7 +62,6 @@ class _AbsenInPageState extends State<AbsenInPage> {
   late Map<String, dynamic> dataResponse;
   late int? _statusAbsen;
   TextEditingController controller = TextEditingController();
-
   @override
   void dispose() {
     _cameraController!.dispose();
@@ -72,12 +71,89 @@ class _AbsenInPageState extends State<AbsenInPage> {
   @override
   void initState() {
     super.initState();
+
     _statusAbsen = widget.statusAbsen;
     _shiftData = widget.shiftData;
     getPermissionStatus();
-    getLocationGrented();
-    dateTimeZone();
     fetchData();
+  }
+
+  getPermissionStatus() async {
+    await Permission.camera.request();
+    var status = await Permission.camera.status;
+
+    if (status.isGranted) {
+      // log('Camera Permission: GRANTED');
+      initCamera(widget.cameras![1]);
+      setState(() {
+        _isCameraPermissionGranted = true;
+        getLocationGrented();
+      });
+    } else {
+      showDialog(
+        barrierDismissible: false,
+        builder: (_) => const CustomDialog(
+          title: "Allow Camera",
+          message: 'Silahkan Allow Camera Untuk Pengambilan Photo',
+        ),
+        context: context,
+      ).then((value) {
+        if (value != null) {
+          getPermissionStatus();
+        }
+      });
+    }
+  }
+
+  getLocationGrented() async {
+    dataResponse = await PageIndexController.determinePosition();
+    // print("sasasasas--------- " + dataResponse.toString());
+
+    if (dataResponse["error"] != true) {
+      Position position = dataResponse["position"];
+
+      // List<Placemark> placemarks =
+      //     await placemarkFromCoordinates(position.latitude, position.longitude);
+      // // print(placemarks[0]);
+      // String alamat =
+      //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
+
+      double distance = Geolocator.distanceBetween(
+        double.parse(_shiftData!.inLat!),
+        double.parse(_shiftData!.inLong!),
+        // -6.176219003174864,
+        // 106.82695509783385,
+        position.latitude,
+        position.longitude,
+      );
+
+      if (distance <= int.parse(_shiftData!.radius.toString())) {
+        // print("------->>Di Dalam Area" + distance.toString());
+        setState(() {
+          distanceVal = false;
+        });
+      } else {
+        // print("------->>Di Luar Area" + distance.toString());
+        setState(() {
+          distanceVal = true;
+        });
+      }
+      _isLocationjGranted = true;
+      dateTimeZone();
+    } else {
+      showDialog(
+        barrierDismissible: false,
+        builder: (_) => CustomDialog(
+          title: "Allow Location",
+          message: dataResponse["message"].toString(),
+        ),
+        context: context,
+      ).then((value) {
+        if (value != null) {
+          getLocationGrented();
+        }
+      });
+    }
   }
 
   Future<void> dateTimeZone() async {
@@ -122,10 +198,16 @@ class _AbsenInPageState extends State<AbsenInPage> {
       getPermissionStatus();
     } else if (!_isTimeZonePermissionGranted) {
       dateTimeZone();
+    } else if (!_isLocationjGranted) {
+      getLocationGrented();
     } else {
       dataResponse = await PageIndexController.determinePosition();
       if (dataResponse["error"] != true) {
         Position position = dataResponse["position"];
+        print("dsdsdsdsdsd--------" + position.isMocked.toString());
+
+        print("dsdsdsdsdsd--------" + position.latitude.toString());
+        print("dsdsdsdsdsd--------" + position.longitude.toString());
         // List<Placemark> placemarks = await placemarkFromCoordinates(
         //     position.latitude, position.longitude);
         // print(placemarks[0]);
@@ -144,21 +226,21 @@ class _AbsenInPageState extends State<AbsenInPage> {
         // print(
         //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
         //         position.longitude.toString());
-        bool isDevelopmentModeEnable = await SafeDevice.isDevelopmentModeEnable;
+        // bool isDevelopmentModeEnable = await SafeDevice.isDevelopmentModeEnable;
         // // print(isDevelopmentModeEnable);
         // print(
         //     "Masuk ----------------------------- _isCameraLocationjGranted>>>>> " +
         //         isDevelopmentModeEnable.toString());
 
         // bool isRealDevice = await SafeDevice.isRealDevice;
-        bool canMockLocation = await SafeDevice.canMockLocation;
+        // bool canMockLocation = await SafeDevice.canMockLocation;
 
         // final bool isMocked = await Geolocator.isLocationServiceEnabled();
 
         // bool a = !canMockLocation;
         // print("canMockLocation hhhhh----------------->>" + a.toString());
-        // print("isDevelopmentModeEnable----------------->>" +
-        //     isDevelopmentModeEnable.toString());
+        // // print("isDevelopmentModeEnable----------------->>" +
+        // //     isDevelopmentModeEnable.toString());
         // print(
         //     "canMockLocation----------------->>" + canMockLocation.toString());
 
@@ -166,7 +248,7 @@ class _AbsenInPageState extends State<AbsenInPage> {
         // print("isMocked----------------->>" + isMocked.toString());
         // print("------->>Di Dalam Area----" + distanceVal.toString());
 
-        if (canMockLocation == true) {
+        if (position.isMocked == true) {
           showDialog(
             builder: (_) => const CustomDialog(
                 title: "Developer Options\nHP Anda Aktif!",
@@ -206,8 +288,9 @@ class _AbsenInPageState extends State<AbsenInPage> {
   }
 
   Future initCamera(CameraDescription cameraDescription) async {
-    _cameraController =
-        CameraController(cameraDescription, ResolutionPreset.high);
+    _cameraController = CameraController(
+        cameraDescription, ResolutionPreset.high,
+        enableAudio: false);
 
     try {
       await _cameraController!.initialize().then((_) {
@@ -216,55 +299,6 @@ class _AbsenInPageState extends State<AbsenInPage> {
       });
     } on CameraException catch (e) {
       debugPrint("camera error $e");
-    }
-  }
-
-  getPermissionStatus() async {
-    await Permission.camera.request();
-    var status = await Permission.camera.status;
-    // var statusLok = await Permission.location.status;
-
-    if (status.isGranted) {
-      // log('Camera Permission: GRANTED');
-      initCamera(widget.cameras![1]);
-      setState(() {
-        _isCameraPermissionGranted = true;
-        // getLocationGrented();
-      });
-    }
-  }
-
-  getLocationGrented() async {
-    dataResponse = await PageIndexController.determinePosition();
-    if (dataResponse["error"] != true) {
-      Position position = dataResponse["position"];
-
-      // List<Placemark> placemarks =
-      //     await placemarkFromCoordinates(position.latitude, position.longitude);
-      // // print(placemarks[0]);
-      // String alamat =
-      //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
-
-      double distance = Geolocator.distanceBetween(
-        double.parse(_shiftData!.inLat!),
-        double.parse(_shiftData!.inLong!),
-        // -6.176219003174864,
-        // 106.82695509783385,
-        position.latitude,
-        position.longitude,
-      );
-      dateTimeZone();
-      if (distance <= int.parse(_shiftData!.radius.toString())) {
-        // print("------->>Di Dalam Area" + distance.toString());
-        setState(() {
-          distanceVal = false;
-        });
-      } else {
-        // print("------->>Di Luar Area" + distance.toString());
-        setState(() {
-          distanceVal = true;
-        });
-      }
     }
   }
 

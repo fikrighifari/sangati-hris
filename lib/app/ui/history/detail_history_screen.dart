@@ -371,7 +371,7 @@ class _DetailHistoryScreenState extends State<DetailHistoryScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   CustomContainer(
-                                    height: 174,
+                                    height: 200,
                                     // width: 174,
                                     margin: EdgeInsets.only(
                                       top: defaultMargin,
@@ -447,7 +447,7 @@ class _DetailHistoryScreenState extends State<DetailHistoryScreen> {
                                                   )
                                                 : SvgPicture.asset(
                                                     'assets/images/default_photo.svg',
-                                                    width: 174,
+                                                    width: 200,
                                                   ),
                                           ),
                                         ),

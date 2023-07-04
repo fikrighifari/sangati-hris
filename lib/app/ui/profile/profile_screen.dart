@@ -17,7 +17,6 @@ import 'package:sangati/app/widgets/reusable_components/custom_container.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_dialog.dart';
 import 'package:sangati/app/widgets/reusable_components/custom_text.dart';
 import 'package:sangati/app/widgets/reusable_components/ui_utils.dart';
-import 'package:shimmer/shimmer.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

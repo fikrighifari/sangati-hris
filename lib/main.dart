@@ -14,7 +14,10 @@ void main() async {
         create: (context) => AuthServices(),
       ),
     ],
-    child: ModularApp(module: AppModule(), child: const AppWidget()),
+    child: ModularApp(
+      module: AppModule(),
+      child: const AppWidget(),
+    ),
   ));
 }
 

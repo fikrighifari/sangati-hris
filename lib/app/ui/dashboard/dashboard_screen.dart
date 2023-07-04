@@ -40,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late DateTime currentBackPressTime;
   @override
   initState() {
+    // getLocationGrented();
     LocalStorageService.load("statusVerif").then((value) {
       if (value != null) {
         //print(" masukkkkkk-------- " + value.toString());
@@ -55,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     fetchData();
+
     super.initState();
   }
 
