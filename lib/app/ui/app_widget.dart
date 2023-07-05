@@ -7,7 +7,7 @@ class AppWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Flutter Slidy',
+      title: 'Sangati HRIS',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

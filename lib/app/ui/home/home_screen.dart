@@ -13,6 +13,8 @@ import 'package:sangati/app/models/profile_model.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/history/history_screen.dart';
+import 'package:sangati/app/ui/research/research.dart';
+import 'package:sangati/app/ui/time_off/time_off_screen.dart';
 import 'package:sangati/app/widgets/cards/history_item.dart';
 import 'package:sangati/app/widgets/constant/enums/rounded_container_type.dart';
 import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
@@ -147,578 +149,581 @@ class _HomeScreenState extends State<HomeScreen> {
                 // } else {
 
                 return RefreshIndicator(
-                    color: AppColor.secondaryColor(),
-                    key: _refreshIndicatorKey,
-                    onRefresh: refreshlist,
-                    child: SingleChildScrollView(
-                      child: categoryMenu!.isNotEmpty
-                          ? Column(
-                              children: <Widget>[
-                                Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    //* Header Content
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                          bottom: coverHeight / 2),
-                                      child: Container(
-                                        height: coverHeight,
-                                        color: AppColor.primaryBlueColor(),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsets.all(defaultMargin),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  TextWidget.title(
-                                                    nameProfile!,
-                                                    color:
-                                                        AppColor.whiteColor(),
-                                                    fontWeight: boldWeight,
-                                                  ),
-                                                  TextWidget.subtitle(
-                                                    depProfile!,
-                                                    color:
-                                                        AppColor.whiteColor(),
-                                                  ),
-                                                  TextWidget.subtitle(
-                                                    placementName!,
-                                                    color:
-                                                        AppColor.whiteColor(),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              // Image.asset('assets/dummy_profile.png')
-                                              SizedBox(
-                                                height: 64,
-                                                width: 64,
-                                                child: Stack(
-                                                  fit: StackFit.expand,
-                                                  //  overflow: Overflow.visible,
-                                                  children: [
-                                                    fotoUrl != ""
-                                                        ? CircleAvatar(
-                                                            backgroundColor:
-                                                                const Color(
-                                                                    0xffF9F9F9),
-                                                            backgroundImage:
-                                                                NetworkImage(
-                                                                    fotoUrl!))
-                                                        : SvgPicture.asset(
-                                                            'assets/images/ic_default_avatar.svg',
-                                                          ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    //* Clock In & Out Content
-                                    Positioned(
-                                      top: top,
+                  color: AppColor.secondaryColor(),
+                  key: _refreshIndicatorKey,
+                  onRefresh: refreshlist,
+                  child: SingleChildScrollView(
+                    child: categoryMenu!.isNotEmpty
+                        ? Column(
+                            children: <Widget>[
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  //* Header Content
+                                  Container(
+                                    margin: EdgeInsets.only(
+                                        bottom: coverHeight / 2),
+                                    child: Container(
+                                      height: coverHeight,
+                                      color: AppColor.primaryBlueColor(),
                                       child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: defaultMargin),
-                                        child: CustomContainer(
-                                          padding:
-                                              EdgeInsets.all(defaultMargin),
-                                          radius: 4,
-                                          // height: clockCardHeight,
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              1.1,
-                                          containerType:
-                                              RoundedContainerType.noOutline,
-                                          backgroundColor:
-                                              AppColor.whiteColor(),
-                                          shadow: [
-                                            BoxShadow(
-                                                offset: const Offset(4, 4),
-                                                blurRadius: 30,
-                                                color: Colors.black
-                                                    .withOpacity(0.06))
-                                          ],
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                        padding: EdgeInsets.all(defaultMargin),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                TextWidget.title(
+                                                  nameProfile!,
+                                                  color: AppColor.whiteColor(),
+                                                  fontWeight: boldWeight,
+                                                ),
+                                                TextWidget.subtitle(
+                                                  depProfile!,
+                                                  color: AppColor.whiteColor(),
+                                                ),
+                                                TextWidget.subtitle(
+                                                  placementName!,
+                                                  color: AppColor.whiteColor(),
+                                                ),
+                                              ],
+                                            ),
+                                            const Spacer(),
+                                            // Image.asset('assets/dummy_profile.png')
+                                            SizedBox(
+                                              height: 64,
+                                              width: 64,
+                                              child: Stack(
+                                                fit: StackFit.expand,
+                                                //  overflow: Overflow.visible,
                                                 children: [
-                                                  TextWidget.title(
-                                                    DateFormat.yMMMMd()
-                                                        .format(currentDate),
-                                                    color:
-                                                        AppColor.blackColor(),
-                                                  ),
-                                                  // TextWidget.title(
-                                                  //   formattedDate,
-                                                  //   color:
-                                                  //       AppColor.blackColor(),
-                                                  // ),
-                                                  TextWidget.title(
-                                                    DateFormat.Hm()
-                                                        .format(currentTime),
-                                                    color:
-                                                        AppColor.blackColor(),
-                                                  ),
+                                                  fotoUrl != ""
+                                                      ? CircleAvatar(
+                                                          backgroundColor:
+                                                              const Color(
+                                                                  0xffF9F9F9),
+                                                          backgroundImage:
+                                                              NetworkImage(
+                                                                  fotoUrl!))
+                                                      : SvgPicture.asset(
+                                                          'assets/images/ic_default_avatar.svg',
+                                                        ),
                                                 ],
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 8,
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    CustomContainer(
-                                                      radius: 4,
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                        vertical: 13,
-                                                      ),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              3,
-                                                      containerType:
-                                                          RoundedContainerType
-                                                              .outlined,
-                                                      borderColor: attendOnday!
-                                                                  .timeIn ==
-                                                              ""
-                                                          ? AppColor
-                                                              .separatorColor()
-                                                          : AppColor
-                                                              .secondaryColor(),
-                                                      backgroundColor: attendOnday!
-                                                                  .timeIn ==
-                                                              ""
-                                                          ? AppColor
-                                                                  .separatorColor()
-                                                              .withOpacity(0.1)
-                                                          : AppColor
-                                                                  .secondaryColor()
-                                                              .withOpacity(0.1),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              SvgPicture.asset(
-                                                                'assets/icons/ic_clock_plus.svg',
-                                                                colorFilter:
-                                                                    ColorFilter
-                                                                        .mode(
-                                                                  AppColor
-                                                                      .secondaryColor(),
-                                                                  BlendMode
-                                                                      .srcIn,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 4,
-                                                              ),
-                                                              const TextWidget
-                                                                  .subtitle(
-                                                                'Clock-In',
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              TextWidget.title(
-                                                                attendOnday!.timeIn ==
-                                                                        ""
-                                                                    ? "-"
-                                                                    : attendOnday!
-                                                                        .timeIn,
-                                                                fontSize: 22,
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 4,
-                                                              ),
-                                                              // const TextWidget
-                                                              //         .subtitle(
-                                                              //     'WIB'),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const Spacer(),
-                                                    CustomContainer(
-                                                      radius: 4,
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                        vertical: 13,
-                                                      ),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              3,
-                                                      containerType:
-                                                          RoundedContainerType
-                                                              .outlined,
-                                                      borderColor: attendOnday!
-                                                                  .timeOut ==
-                                                              ""
-                                                          ? AppColor
-                                                              .separatorColor()
-                                                          : AppColor.redColor(),
-                                                      backgroundColor: attendOnday!
-                                                                  .timeOut ==
-                                                              ""
-                                                          ? AppColor
-                                                                  .separatorColor()
-                                                              .withOpacity(0.1)
-                                                          : AppColor.redColor()
-                                                              .withOpacity(0.1),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              SvgPicture.asset(
-                                                                'assets/icons/ic_clock_remove.svg',
-                                                                colorFilter:
-                                                                    ColorFilter
-                                                                        .mode(
-                                                                  AppColor
-                                                                      .redColor(),
-                                                                  BlendMode
-                                                                      .srcIn,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 4,
-                                                              ),
-                                                              const TextWidget
-                                                                  .subtitle(
-                                                                'Clock-Out',
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              TextWidget.title(
-                                                                attendOnday!.timeOut ==
-                                                                        ""
-                                                                    ? "-"
-                                                                    : attendOnday!
-                                                                        .timeOut,
-                                                                fontSize: 22,
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 4,
-                                                              ),
-                                                              // const TextWidget
-                                                              //         .subtitle(
-                                                              //     'WIB'),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    CustomContainer(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        44.5,
-                                        24,
-                                        44.5,
-                                        10,
-                                      ),
-
-                                      // const EdgeInsets.symmetric(
-                                      //   horizontal: 44.5,
-                                      //   vertical: 24,
-                                      // ),
-                                      margin: EdgeInsets.only(
-                                          bottom: defaultMargin),
-                                      width: MediaQuery.of(context).size.width,
-                                      backgroundColor: AppColor.whiteColor(),
-                                      child: Column(
-                                        children: [
-                                          Container(
-                                              color: Colors.white,
-                                              child: GridView.count(
-                                                primary: true,
-                                                crossAxisCount: 3,
-                                                shrinkWrap: true,
-                                                scrollDirection: Axis.vertical,
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
-                                                childAspectRatio:
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        (MediaQuery.of(context)
-                                                                .size
-                                                                .height /
-                                                            1.8),
-                                                // mainAxisSpacing: 5.0,
-                                                crossAxisSpacing: 5.0,
-                                                children:
-                                                    categoryMenu!.map((dt) {
-                                                  return Container(
-                                                    color: Colors.white,
-                                                    child: InkWell(
-                                                      splashColor:
-                                                          Theme.of(context)
-                                                              .splashColor,
-                                                      highlightColor:
-                                                          Theme.of(context)
-                                                              .highlightColor,
-                                                      onTap: () {
-                                                        if (dt.id == 1) {
-                                                          // print('button 1');
-                                                          Modular.to.push(
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  HistoryScreen(
-                                                                isBack: false,
-                                                              ),
-                                                            ),
-                                                          );
-                                                        } else if (dt.id == 2) {
-                                                          print('button 2');
-                                                          _showFeatureDialog();
-                                                        } else {
-                                                          print('button 3');
-                                                          _showFeatureDialog();
-                                                        }
-                                                        // _checkJaringan();
-                                                        // if (dt.menu == 1) {
-                                                        //   if (_isLogin) {
-                                                        //   } else {
-                                                        //     nextScreen(context,
-                                                        //         AuthScreen());
-                                                        //   }
-                                                        // } else if (dt.serbaJasa ==
-                                                        //     1) {
-                                                        //   if (_isLogin) {
-                                                        //     if (checkJaringan ==
-                                                        //         true) {
-                                                        //       nextScreen(
-                                                        //           context,
-                                                        //           Serbajasa(
-                                                        //             // DepositOrderCategory(
-                                                        //             itemData: dt,
-                                                        //           ));
-                                                        //     }
-                                                        //   } else {
-                                                        //     nextScreen(context,
-                                                        //         AuthScreen());
-                                                        //   }
-                                                        // } else {
-                                                        //   if (checkJaringan == true) {
-                                                        //     HomeController()
-                                                        //         .itemDetailPage(
-                                                        //             context, dt);
-                                                        //   }
-                                                        // }
-                                                      },
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: <Widget>[
-                                                          Center(
-                                                            child: dt.icon != ""
-                                                                ? SvgPicture
-                                                                    .network(
-                                                                    dt.icon,
-                                                                    placeholderBuilder:
-                                                                        (context) =>
-                                                                            CircularProgressIndicator(
-                                                                      color: AppColor
-                                                                          .secondaryColor(),
-                                                                    ),
-                                                                  )
-                                                                : Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(5),
-                                                                    child: SvgPicture
-                                                                        .asset(
-                                                                      'assets/images/default-image-square.svg',
-                                                                      fit: BoxFit
-                                                                          .fitWidth,
-                                                                    ),
-                                                                  ),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 5,
-                                                          ),
-                                                          Flexible(
-                                                            child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .max,
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: <Widget>[
-                                                                  Flexible(
-                                                                      child: TextWidget
-                                                                          .labelMedium(
-                                                                    dt.name,
-                                                                    color: AppColor
-                                                                        .primaryBlueColor(),
-                                                                    fontWeight:
-                                                                        boldWeight,
-                                                                  )),
-                                                                ]),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 5,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                              )),
-                                          Divider(
-                                            color: AppColor.separatorColor(),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                margin: const EdgeInsets.only(
-                                                    right: 8),
-                                                child: SvgPicture.asset(
-                                                  'assets/icons/ic_history.svg',
-                                                  width: 24,
-                                                ),
-                                              ),
-                                              const TextWidget.title(
-                                                'Latest History',
-                                              ),
-                                              const Spacer(),
-                                              InkWell(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          HistoryScreen(
-                                                        isBack: false,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                child: TextWidget.title(
-                                                  'View All',
-                                                  color: AppColor
-                                                      .primaryBlueColor(),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  height: MediaQuery.of(context).size.height,
-                                  padding: EdgeInsets.fromLTRB(
-                                      defaultMargin, 0, defaultMargin, 100),
-                                  child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: const BouncingScrollPhysics(),
-                                      itemCount: attendance!.length,
-                                      itemBuilder: ((context, index) {
-                                        var attendanceList = attendance![index];
-                                        return Column(
-                                          children: [
-                                            HistoryItem(
-                                              historyItem: HistoryModel(
-                                                  dateTime: attendanceList
-                                                      .dayDateName,
-                                                  status: attendanceList
-                                                      .statusAttendance,
-                                                  inClock:
-                                                      attendanceList.timeIn,
-                                                  outClock:
-                                                      attendanceList.timeOut,
-                                                  duration: attendanceList
-                                                      .totalAttendance,
-                                                  idHistory: attendanceList
-                                                      .attendanceId,
-                                                  inLat: attendanceList.inLat,
-                                                  inLong:
-                                                      attendanceList.inLong),
                                             ),
                                           ],
-                                        );
-                                      })),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  //* Clock In & Out Content
+                                  Positioned(
+                                    top: top,
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: defaultMargin),
+                                      child: CustomContainer(
+                                        padding: EdgeInsets.all(defaultMargin),
+                                        radius: 4,
+                                        // height: clockCardHeight,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                1.1,
+                                        containerType:
+                                            RoundedContainerType.noOutline,
+                                        backgroundColor: AppColor.whiteColor(),
+                                        shadow: [
+                                          BoxShadow(
+                                              offset: const Offset(4, 4),
+                                              blurRadius: 30,
+                                              color: Colors.black
+                                                  .withOpacity(0.06))
+                                        ],
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                TextWidget.title(
+                                                  DateFormat.yMMMMd()
+                                                      .format(currentDate),
+                                                  color: AppColor.blackColor(),
+                                                ),
+                                                TextWidget.title(
+                                                  DateFormat.Hm()
+                                                      .format(currentTime),
+                                                  color: AppColor.blackColor(),
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 8,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  CustomContainer(
+                                                    radius: 4,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                      vertical: 13,
+                                                    ),
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            3,
+                                                    containerType:
+                                                        RoundedContainerType
+                                                            .outlined,
+                                                    borderColor: attendOnday!
+                                                                .timeIn ==
+                                                            ""
+                                                        ? AppColor
+                                                            .separatorColor()
+                                                        : AppColor
+                                                            .secondaryColor(),
+                                                    backgroundColor: attendOnday!
+                                                                .timeIn ==
+                                                            ""
+                                                        ? AppColor
+                                                                .separatorColor()
+                                                            .withOpacity(0.1)
+                                                        : AppColor
+                                                                .secondaryColor()
+                                                            .withOpacity(0.1),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            SvgPicture.asset(
+                                                              'assets/icons/ic_clock_plus.svg',
+                                                              colorFilter:
+                                                                  ColorFilter
+                                                                      .mode(
+                                                                AppColor
+                                                                    .secondaryColor(),
+                                                                BlendMode.srcIn,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            const TextWidget
+                                                                .subtitle(
+                                                              'Clock-In',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            TextWidget.title(
+                                                              attendOnday!.timeIn ==
+                                                                      ""
+                                                                  ? "-"
+                                                                  : attendOnday!
+                                                                      .timeIn,
+                                                              fontSize: 22,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            // const TextWidget
+                                                            //         .subtitle(
+                                                            //     'WIB'),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const Spacer(),
+                                                  CustomContainer(
+                                                    radius: 4,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                      vertical: 13,
+                                                    ),
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            3,
+                                                    containerType:
+                                                        RoundedContainerType
+                                                            .outlined,
+                                                    borderColor: attendOnday!
+                                                                .timeOut ==
+                                                            ""
+                                                        ? AppColor
+                                                            .separatorColor()
+                                                        : AppColor.redColor(),
+                                                    backgroundColor: attendOnday!
+                                                                .timeOut ==
+                                                            ""
+                                                        ? AppColor
+                                                                .separatorColor()
+                                                            .withOpacity(0.1)
+                                                        : AppColor.redColor()
+                                                            .withOpacity(0.1),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            SvgPicture.asset(
+                                                              'assets/icons/ic_clock_remove.svg',
+                                                              colorFilter:
+                                                                  ColorFilter
+                                                                      .mode(
+                                                                AppColor
+                                                                    .redColor(),
+                                                                BlendMode.srcIn,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            const TextWidget
+                                                                .subtitle(
+                                                              'Clock-Out',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            TextWidget.title(
+                                                              attendOnday!.timeOut ==
+                                                                      ""
+                                                                  ? "-"
+                                                                  : attendOnday!
+                                                                      .timeOut,
+                                                              fontSize: 22,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            // const TextWidget
+                                                            //         .subtitle(
+                                                            //     'WIB'),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  CustomContainer(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      44.5,
+                                      24,
+                                      44.5,
+                                      10,
+                                    ),
+
+                                    // const EdgeInsets.symmetric(
+                                    //   horizontal: 44.5,
+                                    //   vertical: 24,
+                                    // ),
+                                    margin:
+                                        EdgeInsets.only(bottom: defaultMargin),
+                                    width: MediaQuery.of(context).size.width,
+                                    backgroundColor: AppColor.whiteColor(),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                            color: Colors.white,
+                                            child: GridView.count(
+                                              primary: true,
+                                              crossAxisCount: 3,
+                                              shrinkWrap: true,
+                                              scrollDirection: Axis.vertical,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              childAspectRatio:
+                                                  MediaQuery.of(context)
+                                                          .size
+                                                          .width /
+                                                      (MediaQuery.of(context)
+                                                              .size
+                                                              .height /
+                                                          1.8),
+                                              // mainAxisSpacing: 5.0,
+                                              crossAxisSpacing: 5.0,
+                                              children: categoryMenu!.map((dt) {
+                                                return Container(
+                                                  color: Colors.white,
+                                                  child: InkWell(
+                                                    splashColor:
+                                                        Theme.of(context)
+                                                            .splashColor,
+                                                    highlightColor:
+                                                        Theme.of(context)
+                                                            .highlightColor,
+                                                    onTap: () {
+                                                      if (dt.id == 1) {
+                                                        // print('button 1');
+                                                        Modular.to.push(
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                HistoryScreen(
+                                                              isBack: false,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      } else if (dt.id == 2) {
+                                                        print('button 2');
+                                                        // _showFeatureDialog();
+                                                        Modular.to.pushNamed(
+                                                            '/time_off/');
+                                                      } else {
+                                                        print('button 3');
+                                                        _showFeatureDialog();
+                                                      }
+                                                      // _checkJaringan();
+                                                      // if (dt.menu == 1) {
+                                                      //   if (_isLogin) {
+                                                      //   } else {
+                                                      //     nextScreen(context,
+                                                      //         AuthScreen());
+                                                      //   }
+                                                      // } else if (dt.serbaJasa ==
+                                                      //     1) {
+                                                      //   if (_isLogin) {
+                                                      //     if (checkJaringan ==
+                                                      //         true) {
+                                                      //       nextScreen(
+                                                      //           context,
+                                                      //           Serbajasa(
+                                                      //             // DepositOrderCategory(
+                                                      //             itemData: dt,
+                                                      //           ));
+                                                      //     }
+                                                      //   } else {
+                                                      //     nextScreen(context,
+                                                      //         AuthScreen());
+                                                      //   }
+                                                      // } else {
+                                                      //   if (checkJaringan == true) {
+                                                      //     HomeController()
+                                                      //         .itemDetailPage(
+                                                      //             context, dt);
+                                                      //   }
+                                                      // }
+                                                    },
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: <Widget>[
+                                                        Center(
+                                                          child: dt.icon != ""
+                                                              ? SvgPicture
+                                                                  .network(
+                                                                  dt.icon,
+                                                                  placeholderBuilder:
+                                                                      (context) =>
+                                                                          CircularProgressIndicator(
+                                                                    color: AppColor
+                                                                        .secondaryColor(),
+                                                                  ),
+                                                                )
+                                                              : Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(5),
+                                                                  child:
+                                                                      SvgPicture
+                                                                          .asset(
+                                                                    'assets/images/default-image-square.svg',
+                                                                    fit: BoxFit
+                                                                        .fitWidth,
+                                                                  ),
+                                                                ),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 5,
+                                                        ),
+                                                        Flexible(
+                                                          child: Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: <Widget>[
+                                                                Flexible(
+                                                                    child: TextWidget
+                                                                        .labelMedium(
+                                                                  dt.name,
+                                                                  color: AppColor
+                                                                      .primaryBlueColor(),
+                                                                  fontWeight:
+                                                                      boldWeight,
+                                                                )),
+                                                              ]),
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 5,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                            )),
+                                        Divider(
+                                          color: AppColor.separatorColor(),
+                                        ),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              margin: const EdgeInsets.only(
+                                                  right: 8),
+                                              child: SvgPicture.asset(
+                                                'assets/icons/ic_history.svg',
+                                                width: 24,
+                                              ),
+                                            ),
+                                            const TextWidget.title(
+                                              'Latest History',
+                                            ),
+                                            const Spacer(),
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        HistoryScreen(
+                                                      isBack: false,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              child: TextWidget.title(
+                                                'View All',
+                                                color:
+                                                    AppColor.primaryBlueColor(),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: MediaQuery.of(context).size.height,
+                                padding: EdgeInsets.fromLTRB(
+                                    defaultMargin, 0, defaultMargin, 100),
+                                child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: attendance!.length,
+                                    itemBuilder: ((context, index) {
+                                      var attendanceList = attendance![index];
+                                      return Column(
+                                        children: [
+                                          HistoryItem(
+                                            historyItem: HistoryModel(
+                                                dateTime:
+                                                    attendanceList.dayDateName,
+                                                status: attendanceList
+                                                    .statusAttendance,
+                                                inClock: attendanceList.timeIn,
+                                                outClock:
+                                                    attendanceList.timeOut,
+                                                duration: attendanceList
+                                                    .totalAttendance,
+                                                idHistory:
+                                                    attendanceList.attendanceId,
+                                                inLat: attendanceList.inLat,
+                                                inLong: attendanceList.inLong),
+                                          ),
+                                        ],
+                                      );
+                                    })),
+                              ),
+                            ],
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height / 2.5,
                                 ),
+                                SvgPicture.asset(
+                                  'assets/illustrations/asset_connection_failed.svg',
+                                  width: 100,
+                                ),
+                                const TextWidget.titleLarge('Something Wrong'),
+                                const TextWidget.bodyMedium(
+                                    'Failed to connect to the database')
                               ],
-                            )
-                          : Container(),
-                    ));
+                            ),
+                          ),
+                  ),
+                );
             }
           },
         ),

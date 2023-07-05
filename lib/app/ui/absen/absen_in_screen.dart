@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:datetime_setting/datetime_setting.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
@@ -72,6 +73,11 @@ class _AbsenInPageState extends State<AbsenInPage> {
     _shiftData = widget.shiftData;
     getPermissionStatus();
     fetchData();
+
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
   }
 
   getPermissionStatus() async {

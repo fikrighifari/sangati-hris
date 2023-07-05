@@ -190,7 +190,6 @@
 //   }
 // }
 
-
 // import 'package:flutter/material.dart';
 // import 'package:location/location.dart';
 
@@ -284,7 +283,6 @@
 //   }
 // }
 
-
 // import 'package:flutter/material.dart';
 // import 'package:flutter_device_type/flutter_device_type.dart';
 // import 'package:settings/settings.dart';
@@ -370,3 +368,125 @@
 //     );
 //   }
 // }
+// import 'package:flutter/material.dart';
+
+// class MyScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Center(
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             Text('Left'),
+//             VerticalDivider(
+//               color: Colors.black, // Customize the color of the divider
+//               thickness: 2, // Adjust the thickness of the divider
+//               // height: 40, // Set the height of the vertical divider
+//             ),
+//             Text('Right'),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Tab View Example',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: TabViewScreen(),
+    );
+  }
+}
+
+class TabViewScreen extends StatefulWidget {
+  @override
+  _TabViewScreenState createState() => _TabViewScreenState();
+}
+
+class _TabViewScreenState extends State<TabViewScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Tab View Example'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Content Before TabBarView',
+              style: TextStyle(fontSize: 24),
+            ),
+          ),
+          TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: 'Tab 1'),
+              Tab(text: 'Tab 2'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                Tab1Screen(),
+                Tab2Screen(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Tab1Screen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Tab 1 Content',
+        style: TextStyle(fontSize: 24),
+      ),
+    );
+  }
+}
+
+class Tab2Screen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'Tab 2 Content',
+        style: TextStyle(fontSize: 24),
+      ),
+    );
+  }
+}
