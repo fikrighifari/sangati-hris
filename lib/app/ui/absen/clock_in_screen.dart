@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:datetime_setting/datetime_setting.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -42,9 +43,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
   ShiftData? _shiftData;
   String? responseTime;
   bool? isLoading;
+
   @override
   void initState() {
     super.initState();
+
     _imageFile = widget.picture;
     _shiftData = widget.shiftData;
     startLocation = LatLng(widget.position.latitude, widget.position.longitude);
@@ -96,78 +99,47 @@ class _ClockInScreenState extends State<ClockInScreen> {
   }
 
   Future<void> presensi() async {
-    HomeController().getTimeZone().then((result) {
-      if (result != null) {
-        responseTime = result.data['time'];
-        // print(responseTime.toString());
-        presensiToServer(responseTime, widget.position, _imageFile);
-      } else {
-        DateTime now = DateTime.now();
-        String todayDocID = DateFormat.Hm().format(now);
-        //  print(todayDocID.toString());
-        UiUtils.errorMessage(
-            "Terjadi Kesalahan Perikasa Kembali Jaringan Anda!", context);
-        Navigator.pop(context);
-      }
-    });
+    bool timeAuto = await DatetimeSetting.timeIsAuto();
+    bool timezoneAuto = await DatetimeSetting.timeZoneIsAuto();
+    // print(timeAuto);
+    // print(timezoneAuto);
 
-    // dataResponse = await PageIndexController.determinePosition();
-
-    // if (dataResponse["error"] != true) {
-    //   Position positionLtLong = dataResponse["position"];
-
-    //   double distance = Geolocator.distanceBetween(
-    //       double.parse(_shiftData!.inLat!),
-    //       double.parse(_shiftData!.inLong!),
-    //       positionLtLong.latitude,
-    //       positionLtLong.longitude);
-    //   int distanceVal = 0;
-
-    //   if (distance <= int.parse(widget.shiftData!.radius.toString())) {
-    //     //  print("------->>Di Dalam Area");
-    //     distanceVal = 1;
-    //   }
-    //   // print("sasasasas: " + distanceVal.toString());
-    //   bool canMockLocation = await SafeDevice.canMockLocation;
-    //   if (!canMockLocation == false) {
-    //     showDialog(
-    //       builder: (_) => const CustomDialog(
-    //           title: "Developer Options\nHP Anda Aktif!",
-    //           message:
-    //               "Silahkan matikan Developer Options/Opsi Pengembang pada Pengaturan device Anda, lalu keluar dari aplikasi ini dan coba masuk kembali."),
-    //       context: context,
-    //     ).then((value) {
-    //       if (value != null) {
-    //         //  print(value);
-    //       }
-    //     });
-    //   } else if (distanceVal == 0) {
-    //     showDialog(
-    //       barrierDismissible: false,
-    //       builder: (_) => const CustomDialog(
-    //         title: "Anda Berada Di luar Area ",
-    //         message:
-    //             'Anda Berada Di luar Area jangkauan Absensi silahkan kembali ke titik Absensi',
-    //       ),
-    //       context: context,
-    //     ).then((value) {
-    //       if (value != null) {
-    //         // print(value);
-    //         // DatetimeSetting.openSetting();
-    //       }
-    //     });
+    if (!timezoneAuto || !timeAuto) {
+      Navigator.pop(context);
+      showDialog(
+        barrierDismissible: false,
+        builder: (_) => const CustomDialog(
+          title: "Silahkan Ganti Setting Tanggal dan Waktu",
+          message:
+              'Tanggal dan Waktu tidak terdeteksi secara Outomatis Segera ganti Tanggal dan Waktu Outomatis untuk menghindari kecurangan Absensi',
+        ),
+        context: context,
+      ).then((value) {
+        if (value != null) {
+          // print(value);
+          DatetimeSetting.openSetting();
+        }
+      });
+    } else {
+      DateTime now = DateTime.now();
+      String todayDocID = DateFormat.Hm().format(now);
+      presensiToServer(todayDocID, widget.position, _imageFile);
+    }
+    // HomeController().getTimeZone().then((result) {
+    //   if (result != null) {
+    //     responseTime = result.data['time'];
+    //     // print(responseTime.toString());
+    //     presensiToServer(responseTime, widget.position, _imageFile);
     //   } else {
-    //     HomeController().getTimeZone().then((result) {
-    //       if (result != null) {
-    //         responseTime = result.data['time'];
-
-    //         presensiToServer(responseTime, positionLtLong, _imageFile);
-    //       }
-    //     });
+    //     DateTime now = DateTime.now();
+    //     String todayDocID = DateFormat.Hm().format(now);
+    //     //  print(todayDocID.toString());
+    //     Navigator.pop(context);
+    //     UiUtils.errorMessage(
+    //         "Terjadi Kesalahan Perikasa Kembali Jaringan Anda!", context);
+    //     presensiToServer(todayDocID, widget.position, _imageFile);
     //   }
-    // } else {
-    //   //  Navigator.pop(context);
-    // }
+    // });
   }
 
   Future<void> presensiToServer(String? responseTime, Position positionLatLong,
@@ -204,9 +176,41 @@ class _ClockInScreenState extends State<ClockInScreen> {
           });
         } else {
           Navigator.pop(context);
+          showDialog(
+            barrierDismissible: false,
+            builder: (_) => CustomDialogStatus(
+              title: "Clock-In Failed",
+              subTittle: "Data Masuk Gagal Terupdate, Coba Kembali",
+              messageData: responseTime,
+            ),
+            context: context,
+          ).then((value) {
+            if (value != null) {
+              Navigator.pop(context);
+              // Modular.to.popAndPushNamed('/home/');
+              // print(value);
+              // DatetimeSetting.openSetting();
+            }
+          });
         }
       } else {
         Navigator.pop(context);
+        showDialog(
+          barrierDismissible: false,
+          builder: (_) => CustomDialogStatus(
+            title: "Clock-In Failed",
+            subTittle: "Data Masuk Gagal Terupdate, Coba Kembali",
+            messageData: responseTime,
+          ),
+          context: context,
+        ).then((value) {
+          if (value != null) {
+            Navigator.pop(context);
+            //  Modular.to.popAndPushNamed('/home/');
+            // print(value);
+            // DatetimeSetting.openSetting();
+          }
+        });
       }
     });
   }
@@ -266,8 +270,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                   radius: 4,
                                   child: Image.file(
                                     _imageFile!,
-                                    width: 130,
-                                    // height: 235,
+                                    width: 192,
+                                    height: 235,
                                     fit: BoxFit.cover,
                                   ),
                                   // Image.asset(
@@ -276,7 +280,6 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                   // ),
                                 ),
                               ),
-                              Spacer(),
                               Container(
                                 // color: AppColor.redColor(),
                                 width: MediaQuery.of(context).size.width / 2.5,
