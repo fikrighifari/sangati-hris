@@ -126,7 +126,9 @@ class _TimeOffScreenState extends State<TimeOffScreen>
                           BlendMode.srcIn,
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Modular.to.pushNamed('/time_off/request_time_off');
+                      },
                     ),
                   ],
                 ),
