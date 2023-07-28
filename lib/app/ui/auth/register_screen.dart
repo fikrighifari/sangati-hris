@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:android_id/android_id.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -36,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isLoading = false;
   late Future<ProfileModels?> futureRegister;
   DataProfile? dataProfile;
-  String? _deviceId;
+  String? _deviceId = "";
 
   @override
   void initState() {
@@ -48,25 +47,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     String? deviceId;
 
-    if (kIsWeb) {
-      final webBrowserInfo = await deviceInfo.webBrowserInfo;
-      deviceId =
-          '${webBrowserInfo.vendor ?? '-'} + ${webBrowserInfo.userAgent ?? '-'} + ${webBrowserInfo.hardwareConcurrency.toString()}';
-    } else if (Platform.isAndroid) {
+    if (Platform.isAndroid) {
       const androidId = AndroidId();
       deviceId = await androidId.getId();
     } else if (Platform.isIOS) {
       final iosInfo = await deviceInfo.iosInfo;
       deviceId = iosInfo.identifierForVendor;
-    } else if (Platform.isLinux) {
-      final linuxInfo = await deviceInfo.linuxInfo;
-      deviceId = linuxInfo.machineId;
-    } else if (Platform.isWindows) {
-      final windowsInfo = await deviceInfo.windowsInfo;
-      deviceId = windowsInfo.deviceId;
-    } else if (Platform.isMacOS) {
-      final macOsInfo = await deviceInfo.macOsInfo;
-      deviceId = macOsInfo.systemGUID;
     }
 
     setState(() {
@@ -90,7 +76,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         futureRegister.then((value) {
           if (value != null) {
             if (value.status == "success") {
-              // dataProfile = value.dataProfile;
               UiUtils.successMessage(value.message!, context);
               Modular.to.popAndPushNamed('/auth/');
             } else {
@@ -98,13 +83,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               setState(() {});
               UiUtils.errorMessage(value.message!, context);
             }
-          } else {
-            // SVProgressHUD.dismiss();
-          }
+          } else {}
         });
-
-        // Perform register logic here
-        // if register is successfull, navigate to next screen
       }
     });
   }
@@ -248,7 +228,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Modular.to.popAndPushNamed('/auth/');
+                          Modular.to.pushNamed('/auth/');
                         },
                         child: TextWidget.titleMedium(
                           'Login',
