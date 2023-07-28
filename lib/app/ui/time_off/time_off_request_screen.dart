@@ -32,7 +32,29 @@ class _TimeOffRequestScreenState extends State<TimeOffRequestScreen> {
               ],
               radius: 8,
               child: Column(
-                children: [TextWidget.bodyMedium('Time Off')],
+                children: [
+                  TextWidget.bodyMedium(
+                    'Time Off',
+                    color: AppColor.bodyColor(),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextWidget.bodyMedium(
+                        '29 January 2023',
+                        color: AppColor.bodyColor(),
+                      ),
+                      TextWidget.bodyMedium(
+                        ' - ',
+                        color: AppColor.bodyColor(),
+                      ),
+                      TextWidget.bodyMedium(
+                        '30 January 2023',
+                        color: AppColor.bodyColor(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             )
           ],
