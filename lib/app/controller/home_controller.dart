@@ -187,7 +187,7 @@ class HomeController {
   Future<ShiftModel?> getShift() async {
     String? authToken = await LocalStorageService.load("headerToken");
     try {
-      Dio dio = new Dio();
+      Dio dio = Dio();
       Response response = await dio.get(
         getAPIShift,
         options: Options(
@@ -207,8 +207,8 @@ class HomeController {
       return null;
 
       //return ;
-    } on DioError catch (e) {
-      print(e);
+    } catch (e) {
+      // print(e);
       //RegistrasiModel homeRes1 = RegistrasiModel.fromJson(e.response.data);
       //  return "failed";
     }

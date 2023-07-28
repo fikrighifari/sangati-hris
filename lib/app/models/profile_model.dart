@@ -1,4 +1,4 @@
-// ignore_for_file: no_leading_underscores_for_local_identifiers
+// ignore_for_file: no_leading_underscores_for_local_identifiers, unused_label
 
 class ProfileModels {
   ProfileModels({
@@ -33,7 +33,7 @@ class ProfileModels {
 
 class DataProfile {
   DataProfile({
-    required this.uid,
+    this.uid,
     required this.regisNumber,
     required this.fullName,
     required this.phone,
@@ -51,10 +51,11 @@ class DataProfile {
     required this.statusAccountName,
     required this.statusVerifId,
     required this.statusVerifName,
-    required this.shift,
+    this.shift,
+    required this.modelData,
   });
-  late final int? uid;
-  late final int? regisNumber;
+  int? uid;
+  int? regisNumber;
   late final String? fullName;
   late final int? phone;
   late final String? email;
@@ -64,14 +65,15 @@ class DataProfile {
   late final String? deptName;
   late final String? placementCode;
   late final String? placementName;
-  late final String? gender;
+  String? gender;
   late final String? fotoUrl;
   late final String? emei;
   late final int? statusAccountId;
   late final String? statusAccountName;
   late final int? statusVerifId;
   late final String? statusVerifName;
-  late final Shift shift;
+  late final Shift? shift;
+  late final String? modelData;
 
   DataProfile.fromJson(Map<String?, dynamic> json) {
     uid = json['uid'];
@@ -93,6 +95,7 @@ class DataProfile {
     statusVerifId = json['statusVerifId'];
     statusVerifName = json['statusVerifName'];
     shift = Shift.fromJson(json['shift']);
+    modelData = json['model_data'];
   }
 
   Map<String?, dynamic> toJson() {
@@ -115,8 +118,49 @@ class DataProfile {
     _data['statusAccountName'] = statusAccountName;
     _data['statusVerifId'] = statusVerifId;
     _data['statusVerifName'] = statusVerifName;
-    _data['shift'] = shift.toJson();
+    _data['shift'] = shift!.toJson();
+    _data['model_data'] = modelData;
     return _data;
+  }
+
+  toMap() {
+    return {
+      'uid': uid,
+      'fullName': fullName,
+      'phone': phone,
+      'email': email,
+      'companyId': companyId,
+      'companyName': companyName,
+      'deptId': deptId,
+      'deptName': deptName,
+      'placementCode': placementCode,
+      'placementName': placementName,
+      'fotoUrl': fotoUrl,
+      'statusAccountId': statusAccountId,
+      'statusAccountName': statusAccountName,
+      'statusVerifId': statusVerifId,
+      'statusVerifName': statusVerifName,
+      'model_data': modelData,
+    };
+  }
+
+  DataProfile.fromMap(Map<String?, dynamic> map) {
+    uid = map['uid'];
+    fullName = map['fullName'];
+    phone = map['phone'];
+    email = map['email'];
+    companyId = map['companyId'];
+    companyName = map['companyName'];
+    deptId = map['deptId'];
+    deptName = map['deptName'];
+    placementCode = map['placementCode'];
+    placementName = map['placementName'];
+    fotoUrl = map['fotoUrl'];
+    statusAccountId = map['statusAccountId'];
+    statusAccountName = map['statusAccountName'];
+    statusVerifId = map['statusVerifId'];
+    statusVerifName = map['statusVerifName'];
+    modelData = map['model_data'];
   }
 }
 
@@ -166,5 +210,29 @@ class Shift {
     _data['outLat'] = outLat;
     _data['outLong'] = outLong;
     return _data;
+  }
+
+  toMap() {
+    return {
+      'shiftIn': shiftIn,
+      'shiftOut': shiftOut,
+      'diffHour': diffHour,
+      'radius': radius,
+      'inLat': inLat,
+      'inLong': inLong,
+      'outLat': outLat,
+      'outLong': outLong,
+    };
+  }
+
+  Shift.fromMap(Map<String?, dynamic> map) {
+    shiftIn = map['shiftIn'];
+    shiftOut = map['shiftOut'];
+    diffHour = map['diffHour'];
+    radius = map['radius'];
+    inLat = map['inLat'];
+    inLong = map['inLong'];
+    outLat = map['outLat'];
+    outLong = map['outLong'];
   }
 }

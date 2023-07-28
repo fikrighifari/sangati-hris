@@ -1,16 +1,17 @@
-// ignore_for_file: unused_field, prefer_interpolation_to_compose_strings, unused_element
+// ignore_for_file: unused_field, prefer_interpolation_to_compose_strings, unused_element, no_leading_underscores_for_local_identifiers
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:android_id/android_id.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:sangati/app/controller/home_controller.dart';
+import 'package:sangati/app/database/databse_helper.dart';
 import 'package:sangati/app/models/profile_model.dart';
+import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/service/auth_services.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
@@ -31,13 +32,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showPassword = true;
   late Future<ProfileModels?> futureRegister;
   late DataProfile? dataProfile;
+  late List<ShiftData>? dataShift;
   bool isLoading = false;
 
   SnackBar? snackBar;
-  String? _deviceId;
+  String? _deviceId = "";
+  DatabaseHelper? _databaseHelper;
   @override
   void initState() {
     super.initState();
+    _databaseHelper = DatabaseHelper.instance;
     _getDeviceId();
   }
 
@@ -61,25 +65,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     String? deviceId;
 
-    if (kIsWeb) {
-      final webBrowserInfo = await deviceInfo.webBrowserInfo;
-      deviceId =
-          '${webBrowserInfo.vendor ?? '-'} + ${webBrowserInfo.userAgent ?? '-'} + ${webBrowserInfo.hardwareConcurrency.toString()}';
-    } else if (Platform.isAndroid) {
+    if (Platform.isAndroid) {
       const androidId = AndroidId();
       deviceId = await androidId.getId();
     } else if (Platform.isIOS) {
       final iosInfo = await deviceInfo.iosInfo;
       deviceId = iosInfo.identifierForVendor;
-    } else if (Platform.isLinux) {
-      final linuxInfo = await deviceInfo.linuxInfo;
-      deviceId = linuxInfo.machineId;
-    } else if (Platform.isWindows) {
-      final windowsInfo = await deviceInfo.windowsInfo;
-      deviceId = windowsInfo.deviceId;
-    } else if (Platform.isMacOS) {
-      final macOsInfo = await deviceInfo.macOsInfo;
-      deviceId = macOsInfo.systemGUID;
     }
 
     setState(() {
@@ -88,33 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login(AuthServices authServices2) {
-    // _isPhoneNumberError = _phoneNumberController.text.isEmpty;
-    // _isPasswordError = _passwordController.text.isEmpty;
-
-    // if (!_isPhoneNumberError && !_isPasswordError) {}
-
-    // authServices2
-    //     .loginProfile(context, _phoneNumberController.text,
-    //         _passwordController.text, _deviceId!)
-    //     .then((result) async {
-    //   if (result != null) {
-    //     if (result.status == "success") {
-    //       dataProfile = result.dataProfile;
-    //       LocalStorageService.save("headerToken", result.token.toString());
-    //       LocalStorageService.save("statusVerif", dataProfile!.statusVerifId);
-
-    //       String encodeData = jsonEncode(dataProfile);
-
-    //       LocalStorageService.save("profileData", encodeData);
-
-    //       Modular.to.popAndPushNamed('/home/');
-    //     } else {
-    //       isLoading = false;
-    //       setState(() {});
-    //       UiUtils.errorMessage(result.message!, context);
-    //     }
-    //   } else {}
-    // });
     setState(() {
       _isPhoneNumberError = _phoneNumberController.text.isEmpty;
       _isPasswordError = _passwordController.text.isEmpty;
@@ -128,42 +92,37 @@ class _LoginScreenState extends State<LoginScreen> {
           if (result != null) {
             if (result.status == "success") {
               dataProfile = result.dataProfile;
+              // dataShift = dataProfile!.shift;
               LocalStorageService.save("headerToken", result.token.toString());
+
               LocalStorageService.save(
                   "statusVerif", dataProfile!.statusVerifId);
 
-              String encodeData = jsonEncode(dataProfile);
+              HomeController().getShift().then((result) async {
+                if (result != null) {
+                  if (result.status == "success") {
+                    dataShift = result.shiftData;
+                    await _databaseHelper!.deleteAll();
 
-              LocalStorageService.save("profileData", encodeData);
+                    await _databaseHelper!
+                        .insertProfile(dataProfile!, dataShift!);
 
-              Modular.to.popAndPushNamed('/home/');
+                    Modular.to.popAndPushNamed('/home/');
+                  }
+                }
+              });
             } else {
               isLoading = false;
               setState(() {});
               UiUtils.errorMessage(result.message!, context);
             }
-            // HomeController()
-            //     .loginProfile(context, _phoneNumberController.text,
-            //         _passwordController.text, _deviceId!)
-            //     .then((result) async {
-            //   if (result != null) {
-            //     if (result.status == "success") {
-            //       dataProfile = result.dataProfile;
-            //       LocalStorageService.save("headerToken", result.token.toString());
-            //       LocalStorageService.save(
-            //           "statusVerif", dataProfile!.statusVerifId);
+          } else {
+            isLoading = false;
+            setState(() {});
 
-            //       String encodeData = jsonEncode(dataProfile);
-
-            //       LocalStorageService.save("profileData", encodeData);
-
-            //       Modular.to.popAndPushNamed('/home/');
-            //     } else {
-            //       isLoading = false;
-            //       setState(() {});
-            //       UiUtils.errorMessage(result.message!, context);
-            //     }
-          } else {}
+            UiUtils.errorMessage(
+                "Sedang Terjadi Kesalahan Silahkan Coba Kembali", context);
+          }
         });
       }
     });
@@ -292,8 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Modular.to
-                                    .popAndPushNamed('/auth/register-screen/');
+                                Modular.to.pushNamed('/auth/register-screen/');
                               },
                               child: TextWidget.titleMedium(
                                 'Register',
@@ -323,45 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           onPressed: () {
-                            // Modular.to.popAndPushNamed('/home/');
-                            // Navigator.pushNamedAndRemoveUntil(
-                            //     context, '/main-screen', (route) => false);
                             _login(authServices);
-                            // _isPhoneNumberError =
-                            //     _phoneNumberController.text.isEmpty;
-                            // _isPasswordError = _passwordController.text.isEmpty;
-
-                            // if (!_isPhoneNumberError && !_isPasswordError) {}
-                            // isLoading = true;
-                            // authServices
-                            //     .loginProfile(
-                            //         context,
-                            //         _phoneNumberController.text,
-                            //         _passwordController.text,
-                            //         _deviceId!)
-                            //     .then((result) async {
-                            //   if (result != null) {
-                            //     if (result.status == "success") {
-                            //       dataProfile = result.dataProfile;
-                            //       LocalStorageService.save(
-                            //           "headerToken", result.token.toString());
-                            //       LocalStorageService.save("statusVerif",
-                            //           dataProfile!.statusVerifId);
-
-                            //       String encodeData = jsonEncode(dataProfile);
-
-                            //       LocalStorageService.save(
-                            //           "profileData", encodeData);
-
-                            //       Modular.to.popAndPushNamed('/home/');
-                            //     } else {
-                            //       isLoading = false;
-                            //       setState(() {});
-                            //       UiUtils.errorMessage(
-                            //           result.message!, context);
-                            //     }
-                            //   } else {}
-                            // });
                           },
                         ),
                       ],

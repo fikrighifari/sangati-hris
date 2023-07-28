@@ -1,26 +1,26 @@
 // ignore_for_file: no_leading_underscores_for_local_identifiers
-
 class ShiftModel {
   ShiftModel({
     required this.status,
     required this.message,
     required this.shiftData,
   });
-  late final String? status;
-  late final String? message;
-  late final ShiftData shiftData;
+  late final String status;
+  late final String message;
+  late final List<ShiftData> shiftData;
 
   ShiftModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
-    shiftData = ShiftData.fromJson(json['data']);
+    shiftData =
+        List.from(json['data']).map((e) => ShiftData.fromJson(e)).toList();
   }
 
   Map<String, dynamic> toJson() {
     final _data = <String, dynamic>{};
     _data['status'] = status;
     _data['message'] = message;
-    _data['data'] = shiftData.toJson();
+    _data['data'] = shiftData.map((e) => e.toJson()).toList();
     return _data;
   }
 }
@@ -37,15 +37,15 @@ class ShiftData {
     required this.outLat,
     required this.outLong,
   });
-  late final int? uid;
-  late final String? shiftIn;
-  late final String? shiftOut;
-  late final String? diffHour;
-  late final String? radius;
-  late final String? inLat;
-  late final String? inLong;
-  late final String? outLat;
-  late final String? outLong;
+  late final String uid;
+  late final String shiftIn;
+  late final String shiftOut;
+  late final String diffHour;
+  late final String radius;
+  late final String inLat;
+  late final String inLong;
+  late final String outLat;
+  late final String outLong;
 
   ShiftData.fromJson(Map<String, dynamic> json) {
     uid = json['uid'];
@@ -71,5 +71,29 @@ class ShiftData {
     _data['outLat'] = outLat;
     _data['outLong'] = outLong;
     return _data;
+  }
+
+  toMap() {
+    return {
+      'shiftIn': shiftIn,
+      'shiftOut': shiftOut,
+      'diffHour': diffHour,
+      'radius': radius,
+      'inLat': inLat,
+      'inLong': inLong,
+      'outLat': outLat,
+      'outLong': outLong,
+    };
+  }
+
+  ShiftData.fromMap(Map<String?, dynamic> map) {
+    shiftIn = map['shiftIn'];
+    shiftOut = map['shiftOut'];
+    diffHour = map['diffHour'];
+    radius = map['radius'];
+    inLat = map['inLat'];
+    inLong = map['inLong'];
+    outLat = map['outLat'];
+    outLong = map['outLong'];
   }
 }

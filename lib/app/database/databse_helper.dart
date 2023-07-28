@@ -1,5 +1,7 @@
 // ignore_for_file: unused_element
 
+import 'package:sangati/app/models/profile_model.dart';
+import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
@@ -13,6 +15,8 @@ class DatabaseHelper {
   static const columnUser = 'user';
   static const columnPassword = 'password';
   static const columnModelData = 'model_data';
+  static const tableUser = 'users';
+  static const tableShift = 'shift';
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -28,6 +32,20 @@ class DatabaseHelper {
     // String path = join(documentsDirectory.path, _databaseName);
     // return await openDatabase(path,
     //     version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  Future<int> insertProfile(
+      DataProfile user, List<ShiftData>? shiftData) async {
+    Database db = await instance.database;
+    int resUser = await db.insert(tableUser, user.toMap());
+    //int resShift = await db.insert(tableShift, shift.toMap());
+    // int res = await dbClient.insert("User", user.toMap());
+    var list = [];
+    for (var element in shiftData!) {
+      // print("asasasas " + jsonEncode(element));
+      list.add(await db.insert(tableShift, element.toMap()));
+    }
+    return resUser;
   }
 
   Future _onCreate(Database db, int version) async {
