@@ -84,6 +84,34 @@ class HomeController {
   //   // return null;
   // }
 
+  Future<ProfileModels?> getProfileAll() async {
+    String? authToken = await LocalStorageService.load('headerToken');
+    try {
+      Dio dio = Dio();
+      dio.options.contentType = 'JSON';
+      dio.options.responseType = ResponseType.json;
+      Response response = await dio.get(
+        getAPIProfile,
+        options: Options(
+          contentType: 'application/json',
+          headers: {
+            'authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+      // print('response profile data $response');
+      if (response.statusCode == 200) {
+        ProfileModels profileRes = ProfileModels.fromJson(response.data);
+
+        return profileRes;
+      }
+      return null;
+    } catch (e) {
+      // print(e);
+      return null;
+    }
+  }
+
   Future<HomeModel?> getHomeClass() async {
     String? authToken = await LocalStorageService.load("headerToken");
     // print("DAta ----------kkkk---->>>> " + authToken.toString());
