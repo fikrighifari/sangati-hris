@@ -1,10 +1,10 @@
 const keyGoogleMap = "AIzaSyBIhOYoxLJQqkUA5fQSr60JkPit891uc14";
 
-//*--------Local API
+//--------Local API
 // const baseAPIUrl = "http://192.168.10.88/hris-office/api/v1/";
 // const baseAPIUrlImage = "http://192.168.10.88/hris-office/api/v1/";
 
-//*--------Live API
+//--------Live API
 const baseAPIUrl = "https://develop.apijlantahdev.xyz:8443/api/v1/";
 const baseAPIUrlImage = "https://develop.apijlantahdev.xyz:8443/api/v1/";
 
@@ -15,8 +15,11 @@ const getAPIHome = "${baseAPIUrl}home";
 const getAPIHistoryDetail = "${baseAPIUrl}attendance/detail";
 const postAPIPresensiIn = "${baseAPIUrl}attendance/clock_in";
 const postAPIPresensiOut = "${baseAPIUrl}attendance/clock_out";
+const postAPIPresensiOfflineIn = "${baseAPIUrl}offline/absent_in";
+const postAPIPresensiOfflineOut = "${baseAPIUrl}offline/absent_out";
 
 const getAPIProfile = '$baseAPIUrl/profile/me';
-const getAPIShift = "${baseAPIUrl}profile/shift";
+const getAPIShift = "${baseAPIUrl}profile/shiftv2";
 const postAPIVerifikasi = "${baseAPIUrl}profile/verification";
 const getAPIAttendanceHistory = "${baseAPIUrl}profile/attendance";
+const getAPIDeleteProfile = '$baseAPIUrl/auth/delete_account';

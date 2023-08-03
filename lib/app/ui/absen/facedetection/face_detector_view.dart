@@ -1,79 +1,76 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:sangati/app/ui/absen/facedetection/camera_view.dart';
-import 'package:sangati/app/ui/absen/facedetection/face_detector_painter.dart';
 
-class FaceDetectorView extends StatefulWidget {
-  const FaceDetectorView({
+enum DetectorViewMode { liveFeed, gallery }
+
+class DetectorView extends StatefulWidget {
+  DetectorView({
     Key? key,
-    required this.cameras,
+    required this.title,
+    required this.onImage,
+    this.customPaint,
+    this.text,
+    this.detectionMode = DetectorViewMode.liveFeed,
+    this.initialCameraLensDirection = CameraLensDirection.back,
+    this.onCameraFeedReady,
+    this.onDetectorViewModeChanged,
+    this.onCameraLensDirectionChanged,
   }) : super(key: key);
 
-  final List<CameraDescription>? cameras;
+  final String title;
+  final CustomPaint? customPaint;
+  final String? text;
+  final DetectorViewMode detectionMode;
+  final Function(InputImage inputImage) onImage;
+  final Function()? onCameraFeedReady;
+  final Function(DetectorViewMode mode)? onDetectorViewModeChanged;
+  final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
+  final CameraLensDirection initialCameraLensDirection;
+
   @override
-  State<FaceDetectorView> createState() => _FaceDetectorViewState();
+  State<DetectorView> createState() => _DetectorViewState();
 }
 
-class _FaceDetectorViewState extends State<FaceDetectorView> {
-  final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(
-      enableContours: true,
-      enableClassification: true,
-    ),
-  );
-  bool _canProcess = true;
-  bool _isBusy = false;
-  CustomPaint? _customPaint;
-  String? _text;
+class _DetectorViewState extends State<DetectorView> {
+  late DetectorViewMode _mode;
 
   @override
-  void dispose() {
-    _canProcess = false;
-    _faceDetector.close();
-    super.dispose();
+  void initState() {
+    _mode = widget.detectionMode;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return CameraView(
-      title: 'Face Detector',
-      customPaint: _customPaint,
-      text: _text,
-      onImage: (inputImage) {
-        processImage(inputImage);
-      },
-      initialDirection: CameraLensDirection.front,
+    return
+        // _mode == DetectorViewMode.liveFeed
+        // ?
+        CameraView(
+      customPaint: widget.customPaint,
+      onImage: widget.onImage,
+      onCameraFeedReady: widget.onCameraFeedReady,
+      onDetectorViewModeChanged: _onDetectorViewModeChanged,
+      initialCameraLensDirection: widget.initialCameraLensDirection,
+      onCameraLensDirectionChanged: widget.onCameraLensDirectionChanged,
     );
+    // GalleryView(
+    //     title: widget.title,
+    //     text: widget.text,
+    //     onImage: widget.onImage,
+    //     onDetectorViewModeChanged: _onDetectorViewModeChanged);
   }
 
-  Future<void> processImage(InputImage inputImage) async {
-    if (!_canProcess) return;
-    if (_isBusy) return;
-    _isBusy = true;
-    setState(() {
-      _text = '';
-    });
-    final faces = await _faceDetector.processImage(inputImage);
-    if (inputImage.inputImageData?.size != null &&
-        inputImage.inputImageData?.imageRotation != null) {
-      final painter = FaceDetectorPainter(
-          faces,
-          inputImage.inputImageData!.size,
-          inputImage.inputImageData!.imageRotation);
-      _customPaint = CustomPaint(painter: painter);
+  void _onDetectorViewModeChanged() {
+    if (_mode == DetectorViewMode.liveFeed) {
+      _mode = DetectorViewMode.gallery;
     } else {
-      String text = 'Faces found kkk: ${faces.length}\n\n';
-      for (final face in faces) {
-        text += 'face: ${face.boundingBox}\n\n';
-      }
-      _text = text;
-
-      _customPaint = null;
+      _mode = DetectorViewMode.liveFeed;
     }
-    _isBusy = false;
-    if (mounted) {
-      setState(() {});
+    if (widget.onDetectorViewModeChanged != null) {
+      widget.onDetectorViewModeChanged!(_mode);
     }
+    setState(() {});
   }
 }

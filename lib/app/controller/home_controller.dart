@@ -84,34 +84,6 @@ class HomeController {
   //   // return null;
   // }
 
-  Future<ProfileModels?> getProfileAll() async {
-    String? authToken = await LocalStorageService.load('headerToken');
-    try {
-      Dio dio = Dio();
-      dio.options.contentType = 'JSON';
-      dio.options.responseType = ResponseType.json;
-      Response response = await dio.get(
-        getAPIProfile,
-        options: Options(
-          contentType: 'application/json',
-          headers: {
-            'authorization': 'Bearer $authToken',
-          },
-        ),
-      );
-      // print('response profile data $response');
-      if (response.statusCode == 200) {
-        ProfileModels profileRes = ProfileModels.fromJson(response.data);
-
-        return profileRes;
-      }
-      return null;
-    } catch (e) {
-      // print(e);
-      return null;
-    }
-  }
-
   Future<HomeModel?> getHomeClass() async {
     String? authToken = await LocalStorageService.load("headerToken");
     // print("DAta ----------kkkk---->>>> " + authToken.toString());
@@ -187,7 +159,7 @@ class HomeController {
   Future<ShiftModel?> getShift() async {
     String? authToken = await LocalStorageService.load("headerToken");
     try {
-      Dio dio = Dio();
+      Dio dio = new Dio();
       Response response = await dio.get(
         getAPIShift,
         options: Options(
@@ -197,7 +169,7 @@ class HomeController {
           },
         ),
       );
-      // print("response  Data getShift $response");
+      //  print("response  Data getShift $response");
 
       if (response.statusCode == 200) {
         ShiftModel homeRes = ShiftModel.fromJson(response.data);
@@ -207,8 +179,8 @@ class HomeController {
       return null;
 
       //return ;
-    } catch (e) {
-      // print(e);
+    } on DioError catch (e) {
+      print(e);
       //RegistrasiModel homeRes1 = RegistrasiModel.fromJson(e.response.data);
       //  return "failed";
     }
@@ -246,13 +218,15 @@ class HomeController {
   }
 
   Future<dynamic> postPresensiIn(String? responseTime, Position positionLatLong,
-      File? imageFileImages) async {
+      File? imageFileImages, String? noteController, String? alamatKar) async {
     String? authToken = await LocalStorageService.load("headerToken");
     try {
       FormData formData = FormData.fromMap({
         "scan_in": responseTime,
         "in_lat": positionLatLong.latitude,
         "in_long": positionLatLong.longitude,
+        "in_catatan": noteController,
+        "in_address": alamatKar,
         "file_foto": imageFileImages != null
             ? MultipartFile(
                 imageFileImages.openRead(), await imageFileImages.length(),
@@ -270,7 +244,7 @@ class HomeController {
           },
         ),
       );
-      print("response  Data Possss $response");
+      // print("response  Data Possss $response");
 
       if (response.statusCode == 200) {
         //  String responseTime = response.data;
@@ -291,14 +265,20 @@ class HomeController {
     }
   }
 
-  Future<dynamic> postPresensiOut(String? responseTime,
-      Position positionLatLong, File? imageFileImages) async {
+  Future<dynamic> postPresensiOut(
+      String? responseTime,
+      Position positionLatLong,
+      File? imageFileImages,
+      String? noteController,
+      String? alamatKar) async {
     String? authToken = await LocalStorageService.load("headerToken");
     try {
       FormData formData = FormData.fromMap({
         "scan_out": responseTime,
         "out_lat": positionLatLong.latitude,
         "out_long": positionLatLong.longitude,
+        "out_catatan": noteController,
+        "out_address": alamatKar,
         "file_foto": imageFileImages != null
             ? MultipartFile(
                 imageFileImages.openRead(), await imageFileImages.length(),
@@ -316,7 +296,7 @@ class HomeController {
           },
         ),
       );
-      print("response  Data Possss $response");
+      // print("response  Data Possss uuuuuuu $response");
 
       if (response.statusCode == 200) {
         //  String responseTime = response.data;
@@ -338,7 +318,99 @@ class HomeController {
     return null;
   }
 
-  Future<ProfileModels?> getProfile() async {
+  Future<dynamic> postPresensiInOffline(
+      String? responseDate,
+      String? responseTime,
+      String? positionLat,
+      String? positionLong,
+      String? catatan,
+      File? imageFileImages) async {
+    String? authToken = await LocalStorageService.load("headerToken");
+    try {
+      FormData formData = FormData.fromMap({
+        "date": responseDate,
+        "scan_in": responseTime,
+        "in_lat": positionLat,
+        "in_long": positionLong,
+        "catatan": catatan,
+        "file_foto": imageFileImages != null
+            ? MultipartFile(
+                imageFileImages.openRead(), await imageFileImages.length(),
+                filename: "profile.jpg")
+            : "",
+      });
+      Dio dio = new Dio();
+      Response response = await dio.post(
+        postAPIPresensiOfflineIn,
+        data: formData,
+        options: Options(
+          contentType: 'application/json',
+          headers: {
+            "authorization": "Bearer $authToken",
+          },
+        ),
+      );
+      // print("response  Data Possss $response");
+
+      if (response.statusCode == 200) {
+        return response;
+      }
+
+      return null;
+    } on DioError catch (e) {
+      print("response  Data Possss $e");
+
+      return null;
+    }
+  }
+
+  Future<dynamic> postPresensiOutOffline(
+      String? responseDate,
+      String? responseTime,
+      String? positionLat,
+      String? positionLong,
+      String? catatan,
+      File? imageFileImages) async {
+    String? authToken = await LocalStorageService.load("headerToken");
+    try {
+      FormData formData = FormData.fromMap({
+        "date": responseDate,
+        "scan_out": responseTime,
+        "out_lat": positionLat,
+        "out_long": positionLong,
+        "catatan": catatan,
+        "file_foto": imageFileImages != null
+            ? MultipartFile(
+                imageFileImages.openRead(), await imageFileImages.length(),
+                filename: "profile.jpg")
+            : "",
+      });
+      Dio dio = new Dio();
+      Response response = await dio.post(
+        postAPIPresensiOfflineOut,
+        data: formData,
+        options: Options(
+          contentType: 'application/json',
+          headers: {
+            "authorization": "Bearer $authToken",
+          },
+        ),
+      );
+      //print("response  Data Possss $response");
+
+      if (response.statusCode == 200) {
+        return response;
+      }
+
+      return null;
+    } on DioError catch (e) {
+      print("response  Data Possss $e");
+
+      return null;
+    }
+  }
+
+  Future<ProfileModels?> getProfileAll() async {
     String? authToken = await LocalStorageService.load('headerToken');
     try {
       Dio dio = new Dio();
@@ -366,10 +438,12 @@ class HomeController {
     }
   }
 
-  Future<dynamic> postVerifikasi(File? imageFileImages) async {
+  Future<dynamic> postVerifikasi(
+      File? imageFileImages, String modelDataJson) async {
     String? authToken = await LocalStorageService.load("headerToken");
     try {
       FormData formData = FormData.fromMap({
+        "model_data": modelDataJson,
         "file_foto": imageFileImages != null
             ? MultipartFile(
                 imageFileImages.openRead(), await imageFileImages.length(),
@@ -387,7 +461,7 @@ class HomeController {
           },
         ),
       );
-      print("response  Data Possss $response");
+      // print("response  Data Possss $response");
 
       if (response.statusCode == 200) {
         return response;
@@ -450,6 +524,35 @@ class HomeController {
     } catch (e) {
       print(e);
       return null;
+    }
+  }
+
+  Future<bool> deleteProfile() async {
+    String? authToken = await LocalStorageService.load('headerToken');
+
+    try {
+      Dio dio = new Dio();
+      dio.options.contentType = 'JSON';
+      dio.options.responseType = ResponseType.json;
+      Response response = await dio.get(
+        getAPIDeleteProfile,
+        options: Options(
+          contentType: 'application/json',
+          headers: {
+            'authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+      // print('response profile data $response');
+      if (response.statusCode == 200) {
+        //  ProfileModels profileRes = ProfileModels.fromJson(response.data);
+
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
     }
   }
 }

@@ -1,11 +1,15 @@
-// ignore_for_file: unused_local_variable, unnecessary_null_comparison, deprecated_member_use, unused_element, library_private_types_in_public_api
+// ignore_for_file: unused_local_variable, unnecessary_null_comparison, deprecated_member_use, unused_element, library_private_types_in_public_api, non_constant_identifier_names, unused_field, unused_catch_clause
 
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:new_version_plus/new_version_plus.dart';
 import 'package:sangati/app/controller/home_controller.dart';
+import 'package:sangati/app/database/databse_helper.dart';
 import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
@@ -26,6 +30,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  late ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  final Connectivity _connectivity = Connectivity();
   String title = "Home";
   // int selectedTab = 0;
   bool isScrolling = true;
@@ -34,15 +40,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime preBackpress = DateTime.now();
   int? currentIndex = 0;
   int? statusVerif;
-  ShiftData? shiftData;
+  List<ShiftData>? shiftData;
+
   DateTime pre_backpress = DateTime.now();
   late DateTime currentBackPressTime;
+  DatabaseHelper? _databaseHelper;
   @override
   initState() {
-    // getLocationGrented();
+    initConnectivity();
+    _databaseHelper = DatabaseHelper.instance;
     LocalStorageService.load("statusVerif").then((value) {
       if (value != null) {
-        //print(" masukkkkkk-------- " + value.toString());
+        // print(" masukkkkkk-------- " + value.toString());
         setState(() {
           statusVerif = value;
           if (value == 0 || value == 1) {
@@ -54,17 +63,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     });
 
+    final newVersion = NewVersionPlus(
+      iOSId: 'com.hris.sangati',
+      androidId: 'com.hris.sangati',
+      androidPlayStoreCountry: 'id_ID',
+      // iOSId: 'com.jlantah.app',
+      // androidId: 'com.jlantah.app',
+      // androidPlayStoreCountry: 'id_ID',
+    );
+
+    advancedStatusCheck(newVersion);
+
     fetchData();
 
     super.initState();
   }
 
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      //  developer.log('Couldn\'t check connectivity status', error: e);
+      return;
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    setState(() {
+      _connectionStatus = result;
+    });
+  }
+
+  //Advanced Popup NewVersionPlus
+  advancedStatusCheck(NewVersionPlus newVersion) async {
+    final status = await newVersion.getVersionStatus();
+
+    // print("status!.localVersion " + status!.localVersion.toString());
+    // print("status!.status.storeVersion " + status.storeVersion.toString());
+    if (status!.localVersion != status.storeVersion) {
+      // debugPrint(status.releaseNotes);
+      // debugPrint(status.appStoreLink);
+      // debugPrint(status.localVersion);
+      // debugPrint(status.storeVersion);
+      debugPrint(status.canUpdate.toString());
+      // ignore: use_build_context_synchronously
+      newVersion.showUpdateDialog(
+        context: context,
+        versionStatus: status,
+        dialogTitle: 'Update Tersedia',
+        dialogText:
+            'Versi terbaru tersedia! Silakan update aplikasi SSS Attendance Anda agar dapat menikmati fitur terbaru.',
+        launchModeVersion: LaunchModeVersion.external,
+        // allowDismissal: false,
+        // dismissButtonText: 'Nanti Saja',
+      );
+    }
+  }
+
   fetchData() {
-    //print("MAUKKKKSSSKSKS----------------------->>;");
     HomeController().getShift().then((result) async {
       if (result != null) {
         if (result.status == "success") {
           shiftData = result.shiftData;
+          await _databaseHelper!.deleteTableShift();
+          await _databaseHelper!.insertShift(shiftData!);
         }
       }
     });
@@ -102,6 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //  final postMdl = Provider.of<AuthServices>(context);
     clockButton() {
       return FloatingActionButton(
         onPressed: () {},
@@ -119,7 +193,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           unselectedItemColor: AppColor.disableColor(),
           currentIndex: currentIndex!,
           onTap: (value) {
-            //   print("asasasas------ " + statusVerif.toString());
+            LocalStorageService.load("statusVerif").then((valuedd) {
+              if (valuedd != null) {
+                //   print(" masukkkkkk-------- " + valuedd.toString());
+                setState(() {
+                  statusVerif = valuedd;
+                  if (valuedd == 0 || valuedd == 1) {
+                    currentIndex = 4;
+                  }
+                });
+              }
+            });
+
+            //  print(" masukkkkkk-------- " + _connectionStatus.toString());
 
             if (statusVerif == 0 || statusVerif == 1) {
             } else {
@@ -181,8 +267,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               label: 'Employee',
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(
-                'assets/icons/ic_clock_in_attendance.svg',
+              icon: Image.asset(
+                'assets/images/attendance_button.png',
                 width: 50,
               ),
               label: '',

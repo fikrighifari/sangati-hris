@@ -1,59 +1,86 @@
-// ignore_for_file: unused_local_variable, unused_field, use_build_context_synchronously, avoid_print, prefer_interpolation_to_compose_strings, avoid_unnecessary_containers
+// ignore_for_file: unused_local_variable, unused_field, use_build_context_synchronously, prefer_interpolation_to_compose_strings, avoid_unnecessary_containers, unnecessary_const, unused_catch_clause, unnecessary_null_comparison, avoid_function_literals_in_foreach_calls
 
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:camera/camera.dart';
 import 'package:datetime_setting/datetime_setting.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:lottie/lottie.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:quiver/collection.dart';
 import 'package:sangati/app/controller/home_controller.dart';
 import 'package:sangati/app/controller/page_index.dart';
+import 'package:sangati/app/database/databse_helper.dart';
 import 'package:sangati/app/models/shift_model.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/absen/clock_out_screen.dart';
-import 'package:sangati/app/ui/absen/facedetection/face_detector_painter.dart';
 import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+import '../auth/dataface/imagecovertion.dart';
+import 'package:image/image.dart' as imglib;
+
+List<CameraDescription> cameras = [];
 
 class AbsenOutPage extends StatefulWidget {
-  const AbsenOutPage(
-      {Key? key, required this.cameras, this.statusAbsen, this.shiftData})
-      : super(key: key);
+  const AbsenOutPage({
+    Key? key,
+    required this.cameras,
+    this.statusAbsen,
+    this.shiftData,
+  }) : super(key: key);
 
   final List<CameraDescription>? cameras;
   final int? statusAbsen;
-  final ShiftData? shiftData;
+  final List<ShiftData>? shiftData;
   @override
   State<AbsenOutPage> createState() => _AbsenOutPageState();
 }
 
 class _AbsenOutPageState extends State<AbsenOutPage> {
-  final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(
-      enableContours: true,
-      enableClassification: true,
-    ),
-  );
-  bool _isCameraPermissionGranted = false;
-  bool _isTimeZonePermissionGranted = false;
-  final bool _isCameraLocationjGranted = false;
-  bool _isLocationjGranted = false;
-  CameraController? _cameraController;
-  final bool _isRearCameraSelected = true;
-  TextEditingController controller = TextEditingController();
+  late bool? distanceVal = false;
   bool flash = false;
   bool isControllerInitialized = false;
+
+  bool _isCameraPermissionGranted = false;
+  bool _isTimeZonePermissionGranted = false;
+  bool _isLocationjGranted = false;
+  final bool _isRearCameraSelected = true;
+  bool _isCameraTakePicture = false;
+  CameraController? _cameraController;
+
   List<Face> facesDetected = [];
-  ShiftData? _shiftData;
+  List<ShiftData>? _shiftData;
   late Map<String, dynamic> dataResponse;
   late int? _statusAbsen;
-  late bool? distanceVal = false;
-  late bool? canMockLocation = false;
+  TextEditingController controller = TextEditingController();
+  DatabaseHelper? _dbHelper;
 
+  dynamic faceDetector;
+  CameraLensDirection direction = CameraLensDirection.front;
+  late CameraDescription description = widget.cameras![1];
+  Interpreter? interpreter;
+  bool faceFound = false;
+  int? faceFoundCount = 0;
+  CameraImage? img;
+  bool isBusy = false;
+  Directory? tempDir;
+  File? jsonFile;
+  dynamic data = {};
+  dynamic scanresults;
+  List? e1;
+  double threshold = 1.0;
+  File? imageFileData;
+  bool distanceCheck = false;
+  String? alamatKar;
   @override
   void dispose() {
     _cameraController!.dispose();
@@ -63,7 +90,15 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   @override
   void initState() {
     super.initState();
+    _dbHelper = DatabaseHelper.instance;
+    final options = FaceDetectorOptions(
+        enableClassification: false,
+        enableContours: false,
+        enableLandmarks: false,
+        performanceMode: FaceDetectorMode.fast);
 
+    faceDetector = FaceDetector(options: options);
+    _dbHelper = DatabaseHelper.instance;
     _statusAbsen = widget.statusAbsen;
     _shiftData = widget.shiftData;
     getPermissionStatus();
@@ -76,7 +111,8 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
 
     if (status.isGranted) {
       // log('Camera Permission: GRANTED');
-      initCamera(widget.cameras![1]);
+      // initCamera(widget.cameras![1]);
+      cameraFunction();
       setState(() {
         _isCameraPermissionGranted = true;
         getLocationGrented();
@@ -99,37 +135,40 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
 
   getLocationGrented() async {
     dataResponse = await PageIndexController.determinePosition();
-    // print("sasasasas--------- " + dataResponse.toString());
 
     if (dataResponse["error"] != true) {
       Position position = dataResponse["position"];
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+      // print(placemarks[0]);
+      alamatKar =
+          "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
 
-      // List<Placemark> placemarks =
-      //     await placemarkFromCoordinates(position.latitude, position.longitude);
-      // // print(placemarks[0]);
-      // String alamat =
-      //     "${placemarks[0].street} , ${placemarks[0].subLocality} , ${placemarks[0].locality} , ${placemarks[0].subAdministrativeArea}";
+      _shiftData!.forEach((dataOff) async {
+        if (distanceCheck == false) {
+          double distance = Geolocator.distanceBetween(
+            double.parse(dataOff.outLat),
+            double.parse(dataOff.outLong),
+            position.latitude,
+            position.longitude,
+          );
 
-      double distance = Geolocator.distanceBetween(
-        double.parse(_shiftData!.outLat!),
-        double.parse(_shiftData!.outLong!),
-        // -6.176219003174864,
-        // 106.82695509783385,
-        position.latitude,
-        position.longitude,
-      );
+          if (distance <= int.parse(dataOff.radius.toString())) {
+            setState(() {
+              //  print("------->>Di Dalam Area " + distance.toString());
+              distanceVal = false;
+              distanceCheck = true;
+            });
+          } else {
+            setState(() {
+              //   print("------->>Di Luar Area " + distance.toString());
+              distanceVal = true;
+              distanceCheck = false;
+            });
+          }
+        }
+      });
 
-      if (distance <= int.parse(_shiftData!.radius.toString())) {
-        // print("------->>Di Dalam Area" + distance.toString());
-        setState(() {
-          distanceVal = false;
-        });
-      } else {
-        // print("------->>Di Luar Area" + distance.toString());
-        setState(() {
-          distanceVal = true;
-        });
-      }
       _isLocationjGranted = true;
       dateTimeZone();
     } else {
@@ -151,9 +190,6 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   Future<void> dateTimeZone() async {
     bool timeAuto = await DatetimeSetting.timeIsAuto();
     bool timezoneAuto = await DatetimeSetting.timeZoneIsAuto();
-    // print(timeAuto);
-    // print(timezoneAuto);
-
     if (!timezoneAuto || !timeAuto) {
       showDialog(
         barrierDismissible: false,
@@ -166,6 +202,11 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
       ).then((value) {
         if (value != null) {
           // print(value);
+          _isCameraTakePicture = false;
+          _cameraController!.startImageStream((image) => {
+                if (!isBusy)
+                  {isBusy = true, img = image, doFaceDetectionOnFrame()}
+              });
           DatetimeSetting.openSetting();
         }
       });
@@ -175,14 +216,215 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
   }
 
   fetchData() {
-    // print("MAUKKKKSSSKSKS----------------------->>;");
+    //print("MAUKKKKSSSKSKS----------------------->>;");
     HomeController().getShift().then((result) async {
       if (result != null) {
         if (result.status == "success") {
           _shiftData = result.shiftData;
+          await _dbHelper!.deleteTableShift();
+          await _dbHelper!.insertShift(_shiftData!);
+        } else {
+          fetchDataBase();
         }
+      } else {
+        fetchDataBase();
       }
     });
+  }
+
+  fetchDataBase() {
+    _dbHelper!.getShiftData().then((result) async {
+      setState(() {
+        _shiftData = result;
+      });
+    });
+  }
+
+  Future<void> cameraFunction() async {
+    // cameras = await availableCameras();
+    loadModel();
+    _cameraController =
+        CameraController(description, ResolutionPreset.low, enableAudio: false);
+
+    await _cameraController!.initialize().then((_) {
+      if (!mounted) return;
+      setState(() {});
+      _cameraController!.startImageStream((image) => {
+            if (!isBusy) {isBusy = true, img = image, doFaceDetectionOnFrame()}
+          });
+    });
+  }
+
+  Future loadModel() async {
+    try {
+      var interpreterOptions = InterpreterOptions();
+
+      interpreter = await Interpreter.fromAsset('assets/mobilefacenet.tflite',
+          options: interpreterOptions);
+    } on Exception {
+      //  print('Failed to load model.');
+    }
+  }
+
+  doFaceDetectionOnFrame() async {
+    tempDir = await getApplicationDocumentsDirectory();
+    String embPath = '${tempDir!.path}/emb.json';
+    jsonFile = File(embPath);
+    if (jsonFile!.existsSync()) {
+      data = json.decode(jsonFile!.readAsStringSync());
+    }
+
+    String resName;
+    dynamic finalResult = Multimap<String, Face>();
+    var frameImg = getInputImage();
+    List<Face> faces = await faceDetector.processImage(frameImg);
+    if (faces.isEmpty) {
+      faceFound = false;
+    } else {
+      faceFound = true;
+      faceFoundCount = faces.length;
+      // print("MAsukkkkkk Berapa--------------- " + faces.length.toString());
+    }
+    Face face;
+    imglib.Image convertedImage = _convertCameraImage(img!, direction);
+    for (face in faces) {
+      var boundingBox1 = face.boundingBox;
+      double x, y, w, h;
+      x = (face.boundingBox.left - 10);
+      y = (face.boundingBox.top - 10);
+      w = (face.boundingBox.width + 10);
+      h = (face.boundingBox.height + 10);
+      imglib.Image croppedImage = imglib.copyCrop(
+        convertedImage,
+        x.round(),
+        y.round(),
+        w.round(),
+        h.round(),
+      );
+      croppedImage = imglib.copyResizeCropSquare(croppedImage, 112);
+      resName = _recog(croppedImage);
+      // print("Namamma-----------" + resName);
+
+      finalResult.add(resName, face);
+    }
+    setState(() {
+      scanresults = finalResult;
+      isBusy = false;
+    });
+  }
+
+  imglib.Image _convertCameraImage(CameraImage image, CameraLensDirection dir) {
+    int width = image.width;
+    int height = image.height;
+    var img = imglib.Image(width, height);
+    const int hexFF = 0xFF000000;
+    final int uvyButtonStride = image.planes[1].bytesPerRow;
+    final int? uvPixelStride = image.planes[1].bytesPerPixel;
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        final int uvIndex = uvPixelStride! * (x / 2).floor() +
+            uvyButtonStride * (y / 2).floor();
+        final int index = y * width + x;
+        final yp = image.planes[0].bytes[index];
+        final up = image.planes[1].bytes[uvIndex];
+        final vp = image.planes[2].bytes[uvIndex];
+        int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
+        int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
+            .round()
+            .clamp(0, 255);
+        int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
+        img.data[index] = hexFF | (b << 16) | (g << 8) | r;
+      }
+    }
+    var img1 = (dir == CameraLensDirection.front)
+        ? imglib.copyRotate(img, -90)
+        : imglib.copyRotate(img, 90);
+    return img1;
+  }
+
+  String _recog(imglib.Image img) {
+    List input = imageToByteListFloat32(img, 112, 128, 128);
+    input = input.reshape([1, 112, 112, 3]);
+    List output = List.filled(1 * 192, null, growable: false).reshape([1, 192]);
+    // var input = [
+    //   [1.23, 6.54, 7.81, 3.21, 2.22]
+    // ];
+
+    // var output = List.filled(1 * 2, 0).reshape([1, 2]);
+
+    interpreter?.run(input, output);
+    output = output.reshape([192]);
+    e1 = List.from(output);
+    //return compare(e1!).toUpperCase();
+    return compare(e1!);
+  }
+
+  String compare(List currEmb) {
+    // print("adooooooo --------------------------------->>>>>>>>> : " +
+    //     currEmb.toString());
+    if (data.length == 0) return "No Face saved";
+    double minDist = 999;
+    double currDist = 0.0;
+    String predRes = "UNKNOWN2222";
+    for (String label in data.keys) {
+      currDist = euclideanDistance(data[label], currEmb);
+      if (currDist <= threshold && currDist < minDist) {
+        minDist = currDist;
+        predRes = label;
+        // print("adooooooo kk --------------------------------->>>>>>>>> : " +
+        //     data.toString());
+      }
+    }
+
+    //  log(minDist.toString() + " " + predRes);
+    return predRes;
+  }
+
+  InputImage getInputImage() {
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in img!.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+    final Size imageSize = Size(
+      img!.width.toDouble(),
+      img!.height.toDouble(),
+    );
+    final camera = description;
+    // final imageRotation =
+    //     InputImageRotationValue.fromRawValue(camera.sensorOrientation);
+
+    final imageRotation = _getInputImageRotation(camera.sensorOrientation);
+    // log('orientation: ${imageRotation.rawValue}');
+
+    final inputImageFormat =
+        InputImageFormatValue.fromRawValue(img!.format.raw);
+    final plane = img!.planes.first;
+
+    final inputImage = InputImage.fromBytes(
+      bytes: bytes,
+      metadata: InputImageMetadata(
+        size: imageSize,
+        rotation: imageRotation, // used only in Android
+        format: inputImageFormat!, // used only in iOS
+        bytesPerRow: plane.bytesPerRow, // used only in iOS
+      ),
+    );
+
+    // widget.onImage(inputImage);
+
+    return inputImage;
+  }
+
+  static InputImageRotation _getInputImageRotation(int sensorOrientation) {
+    //  log("sensorOrientation: ${sensorOrientation}");
+    if (sensorOrientation == 0) return InputImageRotation.rotation0deg;
+    if (sensorOrientation == 90) return InputImageRotation.rotation90deg;
+    if (sensorOrientation == 180) {
+      return InputImageRotation.rotation180deg;
+    } else {
+      return InputImageRotation.rotation270deg;
+    }
   }
 
   Future takePicture() async {
@@ -196,6 +438,7 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
       dataResponse = await PageIndexController.determinePosition();
       if (dataResponse["error"] != true) {
         Position position = dataResponse["position"];
+
         if (position.isMocked == true) {
           showDialog(
             builder: (_) => const CustomDialog(
@@ -220,12 +463,17 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
           });
         } else {
           try {
+            await _cameraController!.stopImageStream();
             await _cameraController!.setFlashMode(FlashMode.off);
             XFile? picture = await _cameraController!.takePicture();
-            File? imageFile = File(picture.path);
+            setState(() {
+              imageFileData = File(picture.path);
+            });
 
             final inputImage = InputImage.fromFilePath(picture.path);
-            processImage(inputImage, imageFile, position, _shiftData);
+            processImage(inputImage, imageFileData!, position, _shiftData, e1);
+
+            //   presensiToServer(imageFile, e1);
           } on CameraException catch (e) {
             debugPrint('Error occured while taking picture: $e');
             return null;
@@ -235,100 +483,158 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
     }
   }
 
-  Future initCamera(CameraDescription cameraDescription) async {
-    _cameraController = CameraController(
-        cameraDescription, ResolutionPreset.high,
-        enableAudio: false);
-
-    try {
-      await _cameraController!.initialize().then((_) {
-        if (!mounted) return;
-        setState(() {});
-      });
-    } on CameraException catch (e) {
-      debugPrint("camera error $e");
-    }
-  }
-
   Future<void> processImage(InputImage inputImage, File imageFile,
-      Position position, ShiftData? shiftData) async {
-    final faces = await _faceDetector.processImage(inputImage);
-    if (inputImage.inputImageData?.size != null &&
-        inputImage.inputImageData?.imageRotation != null) {
-      final painter = FaceDetectorPainter(
-          faces,
-          inputImage.inputImageData!.size,
-          inputImage.inputImageData!.imageRotation);
-      // _customPaint = CustomPaint(painter: painter);
-    } else {
-      int? faceDetect = 0;
-      for (final face in faces) {
-        //   text += 'face: ${face.boundingBox}\n\n';
-        faceDetect = 1;
-      }
+      Position position, List<ShiftData>? shiftDataUser, List? e1Data) async {
+    double minDist = 999;
+    double currDist = 0.0;
+    _dbHelper!.gelUserData().then((result) async {
+      var a1 = result.modelData
+          .toString()
+          .substring(1, result.modelData!.length - 1);
 
-      if (faceDetect! > 0) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ClockOutScreen(
-                    picture: imageFile,
-                    position: position,
-                    shiftData: shiftData)));
+      List ab = json.decode(a1).cast<double>().toList();
+      //   print("Dara masuk  kakak-------- : " + e1Data.toString());
+      //  // List? asas = jsonDecode(result.modelData);
+      currDist = _euclideanDistance(ab, e1Data);
+      //  print('users.currDist=>-------------->>> ${currDist}');
+      if (currDist <= threshold && currDist < minDist) {
+        //  print('users.modelData if ');
+        minDist = currDist;
+
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ClockOutScreen(
+              picture: imageFile,
+              position: position,
+              shiftData: shiftDataUser,
+              alamatKar: alamatKar,
+            ),
+          ),
+        );
+        if (result == true) {
+          setState(() {});
+          _isCameraTakePicture = false;
+
+          cameraFunction();
+        }
       } else {
+        // print('users.modelData else => ');
         showDialog(
           barrierDismissible: false,
           builder: (_) => const CustomDialog(
-            title: "Pemindai Wajah",
-            message: 'Wajah Tidak Terdeteksi',
+            title: "Pemindai Wajah Tidak  Dikenali",
+            message: 'Wajah Tidak Dikenali',
           ),
           context: context,
         ).then((value) {
-          if (value != null) {
-            print(value);
-            // DatetimeSetting.openSetting();
-          }
+          setState(() {});
+          _isCameraTakePicture = false;
+          _cameraController!.startImageStream((image) => {
+                if (!isBusy)
+                  {isBusy = true, img = image, doFaceDetectionOnFrame()}
+              });
+          // if (value != null) {
+          //   setState(() {
+          //     _isCameraTakePicture = false;
+          //     cameraFunction();
+          //   });
+          // print(value);
+          // DatetimeSetting.openSetting();
+          // }
         });
       }
+    });
+
+    // print("Dara masuk  kakak-------- : " + e1Data.toString());
+    // final faces = await _faceDetector.processImage(inputImage);
+    // if (inputImage.metadata?.size != null &&
+    //     inputImage.metadata!.rotation != null) {
+    //   final painter = FaceDetectorPainter(
+    //     faces,
+    //     inputImage.metadata!.size,
+    //     inputImage.metadata!.rotation,
+    //   );
+    //   //_customPaint = CustomPaint(painter: painter);
+    // } else {
+    //   int? faceDetect = 0;
+    //   for (final face in faces) {
+    //     //   text += 'face: ${face.boundingBox}\n\n';
+    //     faceDetect = 1;
+    //   }
+
+    //   if (faceDetect! > 0) {
+    //     Navigator.push(
+    //       context,
+    //       MaterialPageRoute(
+    //         builder: (context) => ClockInScreen(
+    //           picture: imageFile,
+    //           position: position,
+    //           shiftData: shiftDataUser,
+    //         ),
+    //       ),
+    //     );
+    //   } else {
+    //     showDialog(
+    //       barrierDismissible: false,
+    //       builder: (_) => const CustomDialog(
+    //         title: "Pemindai Wajah",
+    //         message: 'Wajah Tidak Terdeteksi',
+    //       ),
+    //       context: context,
+    //     ).then((value) {
+    //       if (value != null) {
+    //         // print(value);
+    //         // DatetimeSetting.openSetting();
+    //       }
+    //     });
+    //   }
+    // }
+  }
+
+  double _euclideanDistance(List? e1, List? e2) {
+    if (e1 == null || e2 == null) throw Exception("Null argument");
+
+    double sum = 0.0;
+    for (int i = 0; i < e1.length; i++) {
+      sum += pow((e1[i] - e2[i]), 2);
     }
+    return sqrt(sum);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xffFFFFFF),
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new,
-              color: AppColor.primaryBlueColor(),
-            ),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-          // leadingWidth: 15,
-          title: TextWidget.appBarTitle(
-            "Clock-Out",
+      appBar: CustomAppBar(
+        backButton: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
             color: AppColor.primaryBlueColor(),
-            fontWeight: FontWeight.bold,
           ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
-        body: SafeArea(
-          child: Stack(children: [
+        title: 'Clock-Out',
+      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
             (_isCameraPermissionGranted)
-                ? CameraPreview(_cameraController!)
+                ?
+                // imageFileData != null
+                //     ? Image.file(imageFileData!)
+                CameraPreview(_cameraController!)
                 : Container(
                     color: Colors.black,
-                    child: const Center(child: CircularProgressIndicator())),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
             Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
                   Visibility(
                       visible: distanceVal!,
                       child: Align(
@@ -358,65 +664,103 @@ class _AbsenOutPageState extends State<AbsenOutPage> {
                     ),
                   ),
                   Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                          height: MediaQuery.of(context).size.height * 0.20,
-                          decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(24)),
-                              color: Colors.white),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 20),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                          'assets/icons/ic_faces.svg'),
-                                      const SizedBox(
-                                        width: 10,
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.20,
+                      decoration: const BoxDecoration(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(24)),
+                          color: Colors.white),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0, vertical: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset('assets/icons/ic_faces.svg'),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                TextWidget.titleSmall(
+                                  'Pastikan posisi wajah tepat ditengah',
+                                  color: AppColor.blackColor(),
+                                ),
+                              ],
+                            ),
+                            // Visibility(
+                            //     visible: !_isCameraTakePicture,
+                            //     child:
+                            !_isCameraTakePicture
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 20.0),
+                                    child: CustomButton(
+                                      isRounded: true,
+                                      borderRadius: 4,
+                                      backgroundColor:
+                                          AppColor.secondaryColor(),
+                                      width: double.infinity,
+                                      text: TextWidget.labelLarge(
+                                        'Take Pcture',
+                                        color: AppColor.primaryBlueColor(),
+                                        fontWeight: boldWeight,
                                       ),
-                                      TextWidget.titleSmall(
-                                        'Pastikan posisi wajah tepat ditengah',
-                                        color: AppColor.blackColor(),
+                                      leading: SvgPicture.asset(
+                                        'assets/icons/ic_camera.svg',
+                                        colorFilter: ColorFilter.mode(
+                                          AppColor.primaryBlueColor(),
+                                          BlendMode.srcIn,
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 20.0),
-                                      child: CustomButton(
-                                        isRounded: true,
-                                        borderRadius: 4,
-                                        backgroundColor:
-                                            AppColor.secondaryColor(),
-                                        width: double.infinity,
-                                        text: TextWidget.labelLarge(
-                                          'Take Pcture',
-                                          color: AppColor.primaryBlueColor(),
-                                          fontWeight: boldWeight,
-                                        ),
-                                        leading: SvgPicture.asset(
-                                          'assets/icons/ic_camera.svg',
-                                          colorFilter: ColorFilter.mode(
-                                            AppColor.primaryBlueColor(),
-                                            BlendMode.srcIn,
-                                          ),
-                                        ),
-                                        onPressed: () {
+                                      onPressed: () {
+                                        if (faceFound) {
+                                          setState(() {
+                                            _isCameraTakePicture = true;
+                                          });
+
                                           takePicture();
-                                          //  Modular.to.popAndPushNamed('/home/');
-                                          // Navigator.pushNamedAndRemoveUntil(
-                                          //     context, '/main-screen', (route) => false);
-                                        },
-                                      )),
-                                ]),
-                          ))),
-                ])),
-          ]),
-        ));
+                                        } else {
+                                          showDialog(
+                                            barrierDismissible: false,
+                                            builder: (_) => const CustomDialog(
+                                              title: "Pemindai Wajah",
+                                              message: 'Wajah Tidak Terdeteksi',
+                                            ),
+                                            context: context,
+                                          ).then((value) {
+                                            _isCameraTakePicture = false;
+                                            // if (value != null) {
+                                            //   // print(value);
+                                            //   _isCameraTakePicture = false;
+                                            //   // DatetimeSetting.openSetting();
+                                            // }
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  )
+                                : const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 20.0),
+                                    child: SizedBox(
+                                        child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 1.5,
+                                    ))),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

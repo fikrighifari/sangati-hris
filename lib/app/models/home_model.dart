@@ -4,9 +4,9 @@ class HomeModel {
   HomeModel({
     required this.status,
     required this.message,
-    required this.attendOnday,
-    required this.category,
-    required this.attendance,
+    this.attendOnday,
+    this.category,
+    this.attendance,
   });
   late final String status;
   late final String message;
@@ -47,14 +47,14 @@ class AttendOnday {
     required this.absent,
     required this.totalAttendance,
   });
-  late final String dayDate;
-  late final int statusAbsen;
-  late final String timeIn;
-  late final String timeOut;
-  late final String late;
-  late final String early;
-  late final String absent;
-  late final String totalAttendance;
+  late final String? dayDate;
+  late final int? statusAbsen;
+  late final String? timeIn;
+  late final String? timeOut;
+  late final String? late;
+  late final String? early;
+  late final String? absent;
+  late final String? totalAttendance;
 
   AttendOnday.fromJson(Map<String, dynamic> json) {
     dayDate = json['dayDate'];
@@ -78,6 +78,30 @@ class AttendOnday {
     _data['absent'] = absent;
     _data['totalAttendance'] = totalAttendance;
     return _data;
+  }
+
+  toMap() {
+    return {
+      'dayDate': dayDate,
+      'statusAbsen': statusAbsen,
+      'timeIn': timeIn,
+      'timeOut': timeOut,
+      'late': late,
+      'early': early,
+      'absent': absent,
+      'totalAttendance': totalAttendance,
+    };
+  }
+
+  AttendOnday.fromMap(Map<String?, dynamic> map) {
+    dayDate = map['dayDate'];
+    statusAbsen = map['statusAbsen'];
+    timeIn = map['timeIn'];
+    timeOut = map['timeOut'];
+    late = map['late'];
+    early = map['early'];
+    absent = map['absent'];
+    totalAttendance = map['totalAttendance'];
   }
 }
 
@@ -111,6 +135,24 @@ class Category {
     _data['status'] = status;
     _data['icon'] = icon;
     return _data;
+  }
+
+  toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'status': status,
+      'icon': icon,
+    };
+  }
+
+  Category.fromMap(Map<String?, dynamic> map) {
+    id = map['id'];
+    name = map['name'];
+    slug = map['slug'];
+    status = map['status'];
+    icon = map['icon'];
   }
 }
 

@@ -1,21 +1,20 @@
-// ignore_for_file: sort_child_properties_last
-
-import 'dart:convert';
+// ignore_for_file: sort_child_properties_last, prefer_typing_uninitialized_variables, unused_local_variable, avoid_print
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sangati/app/controller/home_controller.dart';
+import 'package:sangati/app/database/databse_helper.dart';
 import 'package:sangati/app/models/profile_model.dart';
 import 'package:sangati/app/service/local_storage_service.dart';
 import 'package:sangati/app/themes/app_themes.dart';
 import 'package:sangati/app/ui/dashboard/verifikasi_page.dart';
 import 'package:sangati/app/widgets/reusable_components/reusable_components.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -29,13 +28,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late int? statusVerified = 0;
 
   late Future<ProfileModels?> futureProfile;
-
+  late DataProfile? dataProfile;
+  DatabaseHelper? _dbHelper;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
     super.initState();
+    _dbHelper = DatabaseHelper.instance;
     fetchData();
   }
 
@@ -66,13 +67,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton(
                   child: const Text('Batal'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      side: const BorderSide(color: Colors.green),
-                    ),
-                  ),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          side: const BorderSide(color: Colors.green))),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -80,16 +79,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ElevatedButton(
                   child: const Text('Logout'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      side: const BorderSide(color: Colors.red),
-                    ),
-                  ),
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                          side: const BorderSide(color: Colors.red))),
                   onPressed: () {
                     LocalStorageService.remove("headerToken");
-                    LocalStorageService.remove("profileData");
+
                     LocalStorageService.remove("statusVerif");
                     LocalStorageService.remove("statusAbsen");
 
@@ -105,37 +102,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  fetchData() {
-    futureProfile = HomeController().getProfile();
-    futureProfile.then((value) {
-      if (value == null) {
-        LocalStorageService.load('profileData').then((value) {
-          // print('profileValue ==> ' + value);
-          var jsonData = jsonDecode(value);
+  fetchData() async {
+    futureProfile = HomeController().getProfileAll();
+    futureProfile.then((value) async {
+      if (value != null) {
+        if (value.status == "success") {
+          dataProfile = value.dataProfile;
+          nameProfile = value.dataProfile?.fullName;
+          deptProfile = value.dataProfile?.deptName;
+          phoneNumberProfile = value.dataProfile?.phone;
+          emailProfile = value.dataProfile?.email;
+          avatarProfile = value.dataProfile?.fotoUrl;
+          statusVerified = value.dataProfile?.statusVerifId;
 
+          await _dbHelper!.deleteTableUser();
+          await _dbHelper!.insertProfileUser(dataProfile!);
+
+          LocalStorageService.save(
+              "statusVerif", value.dataProfile?.statusVerifId);
+        } else {
+          _dbHelper!.gelUserData().then((result) async {
+            setState(() {
+              nameProfile = result.fullName;
+              deptProfile = result.deptName;
+              phoneNumberProfile = result.phone;
+              emailProfile = result.email;
+              avatarProfile = result.fotoUrl;
+              statusVerified = result.statusVerifId;
+            });
+          });
+        }
+      } else {
+        _dbHelper!.gelUserData().then((result) async {
           setState(() {
-            nameProfile = jsonData['fullName'];
-            deptProfile = jsonData['deptName'];
-            phoneNumberProfile = jsonData['phone'];
-            emailProfile = jsonData['email'];
-            avatarProfile = jsonData['fotoUrl'];
-            statusVerified = jsonData['statusVerifId'];
+            nameProfile = result.fullName;
+            deptProfile = result.deptName;
+            phoneNumberProfile = result.phone;
+            emailProfile = result.email;
+            avatarProfile = result.fotoUrl;
+            statusVerified = result.statusVerifId;
           });
         });
       }
-      nameProfile = value?.dataProfile?.fullName;
-      deptProfile = value?.dataProfile?.deptName;
-      phoneNumberProfile = value?.dataProfile?.phone;
-      emailProfile = value?.dataProfile?.email;
-      avatarProfile = value?.dataProfile?.fotoUrl;
-      statusVerified = value?.dataProfile?.statusVerifId;
-
-      // print("Datttttttt-------->>>" +
-      //     value!.dataProfile!.statusVerifId.toString());
-      String encodeData = jsonEncode(value!.dataProfile);
-      LocalStorageService.save("profileData", encodeData);
-      LocalStorageService.save("statusVerif", value.dataProfile?.statusVerifId);
-      // LocalStorageService.save("statusVerif", 2);
     });
   }
 
@@ -148,18 +156,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // authServices = Provider.of<AuthServices>(context);
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Profile',
         rightWidget: GestureDetector(
-          onTap: () {
-            _showLogoutDialog();
-          },
-          child: TextWidget.titleMedium(
-            'Log-out',
-            color: AppColor.redColor(),
-          ),
-        ),
+            onTap: () {
+              // _showLogoutDialog();
+              Modular.to.pushNamed('/profile/setting_screen');
+            },
+            child: Icon(
+              Icons.settings,
+              weight: 50,
+              color: AppColor.grey1Color(),
+            )
+            // TextWidget.titleMedium(
+            //   'Log-out',
+            //   color: AppColor.redColor(),
+            // ),
+            ),
       ),
       body: FutureBuilder<ProfileModels?>(
         future: futureProfile,
@@ -170,10 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             case ConnectionState.active:
               return const Text('Press button to start.');
             case ConnectionState.waiting:
-              return UiUtils.customShimmerProfile(context);
-            // const Center(
-            //   child: CircularProgressIndicator(),
-            // );
+              return const ShimmerLoading();
             case ConnectionState.done:
               return RefreshIndicator(
                 color: AppColor.secondaryColor(),
@@ -194,11 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               horizontal: defaultMargin,
                               vertical: defaultMargin,
                             ),
-                            child:
-                                // LocalStorageService.load('profileData').isUndefined
-                                //     ? CircularProgressIndicator()
-                                //     :
-                                Column(
+                            child: Column(
                               children: [
                                 //* Header
                                 Row(
@@ -233,12 +241,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                     ),
-                                    // Container(
-                                    //   margin: const EdgeInsets.only(right: 24),
-                                    //   child: SvgPicture.asset(
-                                    //     'assets/icons/ic_avatar.svg',
-                                    //   ),
-                                    // ),
                                     Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
@@ -355,9 +357,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         'Verification',
                                         color: AppColor.primaryBlueColor(),
                                       ),
-                                      const Divider(
-                                        thickness: 1,
-                                      ),
                                       const SizedBox(
                                         height: 12,
                                       ),
@@ -382,17 +381,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           backgroundColor:
                                               AppColor.secondaryColor(),
                                           onPressed: () {
-                                            availableCameras().then(
-                                              (value) => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      VerifikasiSreen(
-                                                    cameras: value,
-                                                  ),
-                                                ),
-                                              ),
-                                            );
+                                            availableCameras().then((value) =>
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            VerifikasiSreen(
+                                                              cameras: value,
+                                                            ))));
                                           },
                                           text: const TextWidget.button('OK'),
                                         ),
@@ -425,35 +421,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             'Verification Submitted',
                                             color: AppColor.primaryBlueColor(),
                                           ),
-                                          const Divider(
-                                            thickness: 1,
-                                          ),
                                           const SizedBox(
                                             height: 12,
                                           ),
-                                          // const TextWidget.bodyMedium(
-                                          //     'Verifikasi telah dilakukan dan akan diproses oleh staff \n\nSilakan lakukan proses logout & login ulang setelah verifikasi berhasil dilakukan'),
-                                          RichText(
-                                            text: TextSpan(
-                                              children: <TextSpan>[
-                                                TextSpan(
-                                                  text:
-                                                      'Verifikasi telah dilakukan dan akan diproses oleh staff.\n\n',
-                                                  style: bodyMediumTextStyle,
-                                                ),
-                                                TextSpan(
-                                                  text:
-                                                      'Silakan lakukan proses logout & login ulang setelah verifikasi berhasil dilakukan.',
-                                                  style: bodyMediumTextStyle
-                                                      .copyWith(
-                                                    color: AppColor
-                                                        .completedColor(),
-                                                    fontWeight: boldWeight,
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          ),
+                                          const TextWidget.bodyMedium(
+                                              'Verifikasi telah dilakukan dan akan diproses oleh staff'),
                                         ],
                                       ),
                                     )
@@ -491,6 +463,179 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
       ),
+    );
+  }
+}
+
+class ShimmerLoading extends StatelessWidget {
+  const ShimmerLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CustomContainer(
+          padding: EdgeInsets.all(defaultMargin),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 24),
+                    child: SizedBox(
+                      height: 96,
+                      width: 96,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: const CircleAvatar(
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 15,
+                            width: 200,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 15,
+                            width: 120,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 16,
+                            width: 100,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: CustomContainer(
+                            radius: 10,
+                            height: 16,
+                            width: 120,
+                            backgroundColor: AppColor.whiteColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  vertical: 12,
+                ),
+                child: Divider(
+                  color: AppColor.separatorColor(),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(
+                      right: 10,
+                    ),
+                    child: Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: CustomContainer(
+                        radius: 5,
+                        height: 35,
+                        width: 35,
+                        backgroundColor: AppColor.whiteColor(),
+                      ),
+                    ),
+                  ),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: CustomContainer(
+                      radius: 10,
+                      height: 16,
+                      width: 120,
+                      backgroundColor: AppColor.whiteColor(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: defaultMargin),
+          child: CustomContainer(
+            padding: EdgeInsets.symmetric(
+              horizontal: defaultMargin,
+              vertical: defaultMargin,
+            ),
+            margin: EdgeInsets.only(top: defaultMargin),
+            width: double.infinity,
+            // backgroundColor: AppColor.redColor(),
+            child: Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(
+                    right: 10,
+                  ),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: CustomContainer(
+                      radius: 5,
+                      height: 35,
+                      width: 35,
+                      backgroundColor: AppColor.whiteColor(),
+                    ),
+                  ),
+                ),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: CustomContainer(
+                    radius: 10,
+                    height: 16,
+                    width: 120,
+                    backgroundColor: AppColor.whiteColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -566,22 +711,6 @@ class ProfileContentMenu extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // CustomContainer(
-                    //   radius: 4,
-                    //   padding: const EdgeInsets.symmetric(
-                    //     horizontal: 8.5,
-                    //     vertical: 4,
-                    //   ),
-                    //   margin: const EdgeInsets.only(
-                    //     right: 4,
-                    //   ),
-                    //   backgroundColor: AppColor.secondaryColor(),
-                    //   child: const TextWidget.labelMedium('3'),
-                    // ),
-                    // TextWidget.bodySmall(
-                    //   'Pending',
-                    //   color: AppColor.bodyColor(),
-                    // ),
                     SvgPicture.asset(
                       'assets/icons/ic_arrow_next.svg',
                       colorFilter: ColorFilter.mode(
