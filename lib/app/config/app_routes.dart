@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:sangati/app/modules/attendance_module.dart';
 import 'package:sangati/app/modules/auth_module.dart';
 import 'package:sangati/app/modules/dashboard_module.dart';
+import 'package:sangati/app/modules/profile_module.dart';
 import 'package:sangati/app/modules/time_off_module.dart';
 import 'package:sangati/app/ui/splash_screen.dart';
 
@@ -11,4 +12,5 @@ List<ModularRoute> appRoutes = [
   ModuleRoute('/auth/', module: AuthModule()),
   ModuleRoute('/attendance/', module: AttendanceModule()),
   ModuleRoute('/time_off/', module: TimeOffModule()),
+  ModuleRoute('/profile/', module: ProfileModule()),
 ];
