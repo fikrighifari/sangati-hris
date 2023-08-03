@@ -267,9 +267,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               label: 'Employee',
             ),
             BottomNavigationBarItem(
-              icon: Image.asset(
-                'assets/images/attendance_button.png',
-                width: 50,
+              icon: SvgPicture.asset(
+                'assets/icons/ic_attendance_button.svg',
               ),
               label: '',
             ),
